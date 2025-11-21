@@ -32,7 +32,7 @@ global.author = "© mᥲძᥱ ᥕі𝗍һ ᑲᥡ 𓆩‌۫᷼ ִֶָღ݉͢ᥣ�
 global.etiqueta = "𓆩‌۫᷼ ִֶָღ݉͢ᥣᥱ᥆ᥒᥱᥣ.𓆪‌‹࣭݊𓂃ⷪ ִֶָ ᷫ‹ ⷭ.࣭𓆩‌۫᷼Ⴕ۫͜𓆪‌"
 global.currency = "¥enes"
 global.banner = "https://files.catbox.moe/ehusnd.jpg"
-global.icono = "https://files.catbox.moe/ehusnd.jpg"
+global.icono = "https://qu.ax/MAuSS.jpg"
 global.catalogo = fs.readFileSync('./lib/catalogo.jpg')
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
