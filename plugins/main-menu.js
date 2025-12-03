@@ -10,10 +10,10 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 ︶•︶°︶•︶°︶•︶°︶•︶°︶•︶°︶
 > ❀ hola! ${m.pushName}, Soy ${botname},
 
- Aquí tienes la lista de comandos.
+ *Aquí tienes la lista de comandos.*
 
 ╭┈ࠢ͜┅ࠦ͜͜╾݊͜─ؕ͜─ׄ͜─֬͜─֟͜─֫͜─ׄ͜─ؕ͜─݊͜┈ࠦ͜┅ࠡ͜͜┈࠭͜͜۰۰͜۰
-│✦ Tipo » ${(conn.user.jid == global.conn.user.jid ? 'Principal 🅥' : 'Sub-Bot 🅑')}
+│✦ *Tipo* » ${(conn.user.jid == global.conn.user.jid ? 'Principal 🅥' : 'Sub-Bot 🅑')}
 │✰ *Usuarios »* ${totalreg.toLocaleString()}
 │⚘ *Versión »* ${vs}
 │ꕥ *Plugins »* ${totalCommands}*
