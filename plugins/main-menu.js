@@ -22,7 +22,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 
 »  ⊹˚୨ •(=^●ω●^=)• *ECONOMY*
 > ✿ Comandos de *Economía* para ganar dinero.
-🌸 *#w • #work • #trabajar*
+✿ *#w • #work • #trabajar*
 > ⸙ Ganar coins trabajando.
 ✿ *#slut • #protituirse*
 > ⸙ Ganar coins prostituyéndote.
