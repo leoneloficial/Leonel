@@ -19,7 +19,6 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 ╰ׅ┈ࠢ͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴ ⋱࣭ ᩴ  ⋮֔   ᩴ ⋰╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜┈ࠢ͜╯ׅ
 
 ╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴ ECONOMY ╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
-
  ✿ Comandos de *Economía* para ganar dinero.
 ✦ *#w • #work • #trabajar*
 > ⸙ Ganar coins trabajando.
