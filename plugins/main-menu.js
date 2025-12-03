@@ -14,59 +14,59 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 
 ╭┈ࠢ͜┅ࠦ͜͜╾݊͜─ؕ͜─ׄ͜─֬͜─֟͜─֫͜─ׄ͜─ؕ͜─݊͜┈ࠦ͜┅ࠡ͜͜┈࠭͜͜۰۰͜۰
 │✦ Tipo » ${(conn.user.jid == global.conn.user.jid ? 'Principal 🅥' : 'Sub-Bot 🅑')}
-│✰ Usuarios » ${totalreg.toLocaleString()}
-│⚘ Versión » ${vs}
-│ꕥ Plugins » ${totalCommands}
-│🜸 Librería » ${libreria}
+│*✰ Usuarios » ${totalreg.toLocaleString()}*
+│*⚘ Versión » ${vs}*
+│*ꕥ Plugins » ${totalCommands}*
+│*🜸 Librería » ${libreria}*
 ╰ׅ┈ࠢ͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴ ⋱࣭ ᩴ  ⋮֔   ᩴ ⋰╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜┈ࠢ͜╯ׅ
 
 »  ⊹˚୨ •(=^●ω●^=)• *ECONOMY*
 > ✿ Comandos de *Economía* para ganar dinero.
-✦ *#w • #work • #trabajar*
+🩷 *#w • #work • #trabajar*
 > ⸙ Ganar coins trabajando.
-✦ *#slut • #protituirse*
+🩷 *#slut • #protituirse*
 > ⸙ Ganar coins prostituyéndote.
-✦ *#coinflip • #flip • #cf* + [cantidad] <cara/cruz>
+🩷 *#coinflip • #flip • #cf* + [cantidad] <cara/cruz>
 > ⸙ Apostar coins en un cara o cruz.
-✦ *#crime • #crimen*
+🩷 *#crime • #crimen*
 > ⸙ Ganar coins rapido.
-✦ *#roulette • #rt* + [red/black] [cantidad]
+🩷 *#roulette • #rt* + [red/black] [cantidad]
 > ⸙ Apostar coins en una ruleta.
-✦ *#casino • #apostar* • *#slot* + [cantidad]
+🩷 *#casino • #apostar* • *#slot* + [cantidad]
 > ⸙ Apuestar coins en el casino.
-✦ *#balance • #bal • #bank* + <usuario>
+🩷 *#balance • #bal • #bank* + <usuario>
 > ⸙ Ver cuantos coins tienes en el banco.
-✦ *#deposit • #dep • #depositar • #d* + [cantidad] | all
+🩷 *#deposit • #dep • #depositar • #d* + [cantidad] | all
 > ⸙ Depositar tus coins en el banco.
-✦ *#withdraw • #with • #retirar* + [cantidad] | all
+🩷 *#withdraw • #with • #retirar* + [cantidad] | all
 > ⸙ Retirar tus coins del banco.
-✦ *#economyinfo • #einfo*
+🩷 *#economyinfo • #einfo*
 > ⸙ Ver tu información de economía en el grupo.
-✦ *#givecoins • #pay • #coinsgive* + [usuario] [cantidad]
+🩷 *#givecoins • #pay • #coinsgive* + [usuario] [cantidad]
 > ⸙ Dar coins a un usuario.
-✦ *#miming • #minar • #mine*
+🩷 *#miming • #minar • #mine*
 > ⸙ Realizar trabajos de minería y ganar coins.
-✦ *#daily • #diario*
+🩷 *#daily • #diario*
 > ⸙ Reclamar tu recompensa diaria.
-✦ *#cofre* • *#coffer*
+🩷 *#cofre* • *#coffer*
 > ⸙ Reclamar tu cofre diario.
-✦ *#weekly • #semanal*
+🩷 *#weekly • #semanal*
 > ⸙ Reclamar tu recompensa semanal.
-✦ *#monthly • #mensual*
+🩷 *#monthly • #mensual*
 > ⸙ Reclamar tu recompensa mensual.
-✦ *#steal • #robar • #rob* + [@mencion]
+🩷 *#steal • #robar • #rob* + [@mencion]
 > ⸙ Intentar robar coins a un usuario.
-✦ *#economyboard • #eboard • #baltop* + <pagina>
+🩷 *#economyboard • #eboard • #baltop* + <pagina>
 > ⸙ Ver tu información de economía en el grupo.
-✦ *#aventura • #adventure*
+🩷 *#aventura • #adventure*
 > ⸙ Aventuras para ganar coins y exp.
-✦ *#curar • #heal*
+🩷 *#curar • #heal*
 > ⸙ Curar salud para salir de aventuras.
-✦ *#cazar • #hunt*
+🩷 *#cazar • #hunt*
 > ⸙ cazar animales para ganar coins y exp.
-✦ *#fish • #pescar*
+🩷 *#fish • #pescar*
 > ⸙ Ganar coins y exp pescando.
-✦ *#mazmorra • #dungeon*
+🩷 *#mazmorra • #dungeon*
 > ⸙ Explorar mazmorras para ganar coins y exp.
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅ
 
@@ -98,7 +98,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 > ⸙ Buscar videos de YouTube.
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅ
 
-╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴𐔌 *GACHA* 𐦯╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+»  ⊹˚୨ •(=^●ω●^=)• *GACHA* 
 > ✿ Comandos de *Gacha* para reclamar y colecciónar personajes.
 ✦ *#buycharacter • #buychar • #buyc* + [nombre]
 > ⸙ Comprar un personaje en venta.
@@ -146,7 +146,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 > ⸙ Ver el top de personajes con mayor valor.
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅ
 
-╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴𐔌 *SOCKETS* 𐦯╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+»  ⊹˚୨ •(=^●ω●^=)• *SOCKETS*
 > ✿ Comandos para registrar tu propio Bot.
 ✦ *#qr • #code*
 > ⸙ Crear un Sub-Bot con un codigo QR/Code
@@ -170,7 +170,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 > ⸙ Cambiar el nombre de usuario
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅ
 
-╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴𐔌 *UTILITIES* 𐦯╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+»  ⊹˚୨ •(=^●ω●^=)• *UTILITIES* 
 > ✿ Comandos de *Útilidades*.
 ✦ *#help • #menu*
 > ⸙ Ver el menú de comandos.
@@ -224,7 +224,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 > ⸙ Realizar búsquedas por Google.
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅ
 
-╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴𐔌 *PROFILES* 𐦯╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+»  ⊹˚୨ •(=^●ω●^=)• *PROFILES* 
 > ✿ Comandos de *Perfil* para ver y configurar tu perfil.
 ✦ *#leaderboard • #lboard • #top* + <Paginá>
 > ⸙ Top de usuarios con más experiencia.
@@ -254,7 +254,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 > ⸙ Comprar membresía premium.
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅ
 
-╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴𐔌 *GROUPS* 𐦯╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+»  ⊹˚୨ •(=^●ω●^=)• *GROUPS* 
 > ✿ Comandos para *Administradores* de grupos.
 ✦ *#tag • #hidetag • #invocar • #tagall* + [mensaje]
 > ⸙ Envía un mensaje mencionando a todos los usuarios del grupo.
@@ -322,7 +322,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 > ⸙ Ver enlace de invitación del grupo.
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅׅ
 
-╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴𐔌 *ANIME* 𐦯╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+»  ⊹˚୨ •(=^●ω●^=)• *ANIME* 
 > ✿ Comandos de reacciones de anime.
 ✦ *#angry • #enojado* + <mencion>
 > ⸙ Estar enojado
@@ -426,7 +426,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 > ⸙ Genera imágenes para amistades o parejas.
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯
 
-╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴𐔌 *NSFW* 𐦯╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+»  ⊹˚୨ •(=^●ω●^=)• *NSFW*
 ✦ *#danbooru • #dbooru* + [Tags]
 > ⸙ Buscar imagenes en Danbooru
 ✦ *#gelbooru • #gbooru* + [Tags]
