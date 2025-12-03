@@ -8,7 +8,8 @@ let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags
 
 let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮
 ︶•︶°︶•︶°︶•︶°︶•︶°︶•︶°︶
-> ❀ Hola! @${userId.split('@')[0]}, Soy *${botname}*, *Aquí tienes la lista de comandos.*
+> ❀ Hola! @${userId.split('@')[0]}, Soy *${botname}*, 
+*Aquí tienes la lista de comandos.*
 
 ╭┈ࠢ͜┅ࠦ͜͜╾݊͜─ؕ͜─ׄ͜─֬͜─֟͜─֫͜─ׄ͜─ؕ͜─݊͜┈ࠦ͜┅ࠡ͜͜┈࠭͜͜۰۰͜۰
 │✦ *Tipo* » ${(conn.user.jid == global.conn.user.jid ? 'Principal' : 'Sub-Bot')}
@@ -19,6 +20,7 @@ let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮  
 ╰ׅ┈ࠢ͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴ ⋱࣭ ᩴ  ⋮֔   ᩴ ⋰╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜┈ࠢ͜╯ׅ
 
 ╭┈ࠢ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴ ECONOMY ╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜
+
  ✿ Comandos de *Economía* para ganar dinero.
 ✦ *#w • #work • #trabajar*
 > ⸙ Ganar coins trabajando.
