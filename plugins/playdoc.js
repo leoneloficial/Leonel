@@ -111,8 +111,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         document: { url: video.result.download },
         mimetype: "video/mp4",
         fileName: `${title}.mp4`,
-        caption: `>  \`ᴛɪᴛᴜʟᴏ:\` *${title}*
->  \`ᴛᴀᴍᴀɴ̃ᴏ:\` *${fileSize}*`,
+        caption: `> ❀ \`ᴛɪᴛᴜʟᴏ:\` *${title}*
+> ❀ \`ᴛᴀᴍᴀɴ̃ᴏ:\` *${fileSize}*`,
         ...(thumbDoc ? { jpegThumbnail: thumbDoc } : {})
       },
       { quoted: fkontak }
