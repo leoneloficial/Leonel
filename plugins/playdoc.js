@@ -134,7 +134,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 };
 
-handler.command = ['ytmp4doc', 'ytvdoc', 'mp4doc'];
+handler.command = ['ytmp4doc', 'ytvdoc', 'playdoc'];
 handler.help = ['ytmp4doc <texto>'];
 handler.tags = ['download'];
 handler.group = true;
