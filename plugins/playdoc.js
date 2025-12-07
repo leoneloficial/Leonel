@@ -54,13 +54,13 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       }
     };
 
-    const info = `「✦」 descargando: ${title}
+    const info = `*「✦」 descargando: ${title}*
 
-.canal: ${author.name || '❄️ Desconocido'}
-๑ ˙•.   ⃝͈ٝ🎋̰ࠛ   𝐕𝐢𝐬𝐭𝐚𝐬: ${vistas}
-๑ ˙•.   ⃝͈ٝ🌾̰ࠛ  𝐃𝐮𝐫𝐚𝐜𝐢𝐨𝐧: ${timestamp}
-๑ ˙•.   ⃝͈ٝ🍁̰ࠛ  𝐏𝐮𝐛𝐥𝐢𝐜𝐚𝐝𝐨: ${ago}
-๑ ˙•.   ⃝͈ٝ🪽̰ࠛ 𝐋𝐢𝐧𝐤: ${url}
+> ❑ canal: ${author.name || 'Desconocido'}
+> ♡ vistas: ${vistas}
+> ✧︎ Duracion: ${timestamp}
+> ☁︎ Publicado: ${ago}
+> ➪link: ${url}
 
 ﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌`;
 
