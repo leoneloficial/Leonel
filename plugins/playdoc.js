@@ -21,10 +21,10 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
 
     if (!text?.trim())
-      return conn.reply(m.chat, `*💛 Por favor, ingresa el nombre o enlace del video.*`, m, rcanal);
+      return conn.reply(m.chat, `*❀ Por favor, ingresa el nombre o enlace del video.*`, m, rcanal);
 
-    await m.react('⏰');
-    await conn.sendMessage(m.chat, { text: `> ☕ Buscando en YouTube:\n> ${text} ` }, { quoted: m });
+    await m.react('🕐');
+    await conn.sendMessage(m.chat, { text: `> ❀ Buscando en YouTube:\n> ${text} ` }, { quoted: m });
 
     const videoMatch = text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|shorts\/|v\/)?([a-zA-Z0-9_-]{11})/);
     const query = videoMatch ? `https://youtu.be/${videoMatch[1]}` : text;
@@ -47,8 +47,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       key: { fromMe: false, participant: "0@s.whatsapp.net" },
       message: {
         documentMessage: {
-          title: "𝗗𝗘𝗦𝗖𝗔𝗥𝗚𝗔𝗡𝗗𝗢.... ..",
-          fileName: "☃️ 𝗗𝗘𝗦𝗖𝗔𝗥𝗚𝗔𝗡𝗗𝗢....",
+          title: "",
+          fileName: "",
           jpegThumbnail: thumb3
         }
       }
@@ -60,9 +60,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 > ♡ vistas»  *${vistas}*
 > ✧︎ Duracion » *${timestamp}*
 > ☁︎ Publicado » *${ago}*
-> ➪link » *${url}*
-
-﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌`;
+> ➪link » *${url}*`;
 
     const thumb = (await conn.getFile(thumbnail)).data;
     await conn.sendMessage(m.chat, { image: thumb, caption: info }, { quoted: fkontak2 });
@@ -113,8 +111,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         document: { url: video.result.download },
         mimetype: "video/mp4",
         fileName: `${title}.mp4`,
-        caption: `> 🌴 \`ᴛɪᴛᴜʟᴏ:\` *${title}*
-> 🌾 \`ᴛᴀᴍᴀɴ̃ᴏ:\` *${fileSize}*`,
+        caption: `>  \`ᴛɪᴛᴜʟᴏ:\` *${title}*
+>  \`ᴛᴀᴍᴀɴ̃ᴏ:\` *${fileSize}*`,
         ...(thumbDoc ? { jpegThumbnail: thumbDoc } : {})
       },
       { quoted: fkontak }
