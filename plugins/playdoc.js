@@ -56,11 +56,11 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     const info = `*「✦」 descargando: ${title}*
 
-> ❑ canal: ${author.name || 'Desconocido'}
-> ♡ vistas: ${vistas}
-> ✧︎ Duracion: ${timestamp}
-> ☁︎ Publicado: ${ago}
-> ➪link: ${url}
+> ❑ canal » *${author.name || 'Desconocido'}*
+> ♡ vistas»  *${vistas}*
+> ✧︎ Duracion » *${timestamp}*
+> ☁︎ Publicado » *${ago}*
+> ➪link » *${url}*
 
 ﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌﹌`;
 
