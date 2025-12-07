@@ -47,7 +47,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       key: { fromMe: false, participant: "0@s.whatsapp.net" },
       message: {
         documentMessage: {
-          title: "",
+          title: "»  ⊹˚୨ •(=^●ω●^=)•",
           fileName: "",
           jpegThumbnail: thumb3
         }
@@ -92,7 +92,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
               mimetype: "image/jpeg",
               jpegThumbnail: Shadow_url
             },
-            title: "🦌 𝐃𝐄𝐒𝐂𝐀𝐑𝐆𝐀 𝐂𝐎𝐌𝐏𝐋𝐄𝐓𝐀 🎅",
+            title: "»  ⊹˚୨ •(=^●ω●^=)•",
             description: "",
             currencyCode: "USD",
             priceAmount1000: 100000,
@@ -125,7 +125,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     console.error(e);
     const msg = typeof e === 'string'
       ? e
-      : `🎄 Ocurrió un error inesperado.\n> Usa *${usedPrefix}report* para informarlo.\n\n${e?.message || JSON.stringify(e)}`;
+      : `❀ Ocurrió un error inesperado.\n> Usa *${usedPrefix}report* para informarlo.\n\n${e?.message || JSON.stringify(e)}`;
     return conn.reply(m.chat, msg, m, fake);
   }
 };
