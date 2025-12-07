@@ -54,11 +54,9 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       }
     };
 
-    const info = `ㅤ       ࣪      𓈒      𔓗𓏸    ࣪     ׅ
-᱒᱒     𝒀𝒐𝒖𝑻𝒖𝒃𝒆 - 𝑫𝒐𝒄𝒔 ބ  ࣪ ㅤ
+    const info = `「✦」 descargando: ${title}
 
-๑ ˙•.   ⃝͈ٝ🍒̰ࠛ  𝐓𝐢𝐭𝐮𝐥𝐨: ${title}
-๑ ˙•.   ⃝͈ٝ⚡̰ࠛ  𝐂𝐚𝐧𝐚𝐥: ${author.name || '❄️ Desconocido'}
+.canal: ${author.name || '❄️ Desconocido'}
 ๑ ˙•.   ⃝͈ٝ🎋̰ࠛ   𝐕𝐢𝐬𝐭𝐚𝐬: ${vistas}
 ๑ ˙•.   ⃝͈ٝ🌾̰ࠛ  𝐃𝐮𝐫𝐚𝐜𝐢𝐨𝐧: ${timestamp}
 ๑ ˙•.   ⃝͈ٝ🍁̰ࠛ  𝐏𝐮𝐛𝐥𝐢𝐜𝐚𝐝𝐨: ${ago}
