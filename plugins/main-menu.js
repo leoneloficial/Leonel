@@ -6,13 +6,10 @@ let userId = mentionedJid && mentionedJid[0] ? mentionedJid[0] : m.sender
 let totalreg = Object.keys(global.db.data.users).length
 let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
 
-let txt = `̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮   ̮
-︶•︶°︶•︶°︶•︶°︶•︶°︶•︶°︶
-> ✿ hola! ${m.pushName}, Soy ${botname},
-
+let txt = `̮ > ✿ hola! ${m.pushName}, Soy ${botname},
  *Aquí tienes la lista de comandos.*
 
-╭┈ࠢ͜┅ࠦ͜͜╾݊͜─ؕ͜─ׄ͜─֬͜─֟͜─֫͜─ׄ͜─ؕ͜─݊͜┈ࠦ͜┅ࠡ͜͜┈࠭͜͜۰۰͜۰
+╭┈ ↷
 │✦ *Tipo* » ${(conn.user.jid == global.conn.user.jid ? 'Principal 🅥' : 'Sub-Bot 🅑')}
 │✰ *Usuarios »* ${totalreg.toLocaleString()}
 │⚘ *Versión »* ${vs}
