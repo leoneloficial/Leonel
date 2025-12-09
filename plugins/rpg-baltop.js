@@ -13,7 +13,15 @@ const slice = sorted.slice(startIndex, endIndex)
 for (let i = 0; i < slice.length; i++) {
 const { jid, coin, bank } = slice[i]
 const total = (coin || 0) + (bank || 0)
-let name = await (async () => global.db.data.users[jid].name.trim() || (await conn.getName(jid).then(n => typeof n === 'string' && n.trim() ? n : jid.split('@')[0]).catch(() => jid.split('@')[0])))()
+let name = await (async () => {
+  let localName = global.db.data.users[jid]?.name?.trim();
+  if (localName) return localName;
+  try {
+    let fetched = await conn.getName(jid);
+    if (typeof fetched === "string" && fetched.trim()) return fetched.trim();
+  } catch {}
+  return jid.split("@")[0];
+})();
 text += `✰ ${startIndex + i + 1} » *${name}:*\n`
 text += `\t\t Total→ *¥${total.toLocaleString()} ${currency}*\n`
 }
