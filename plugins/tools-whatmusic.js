@@ -1,63 +1,84 @@
 import acrcloud from "acrcloud"
+import fetch from "node-fetch"
 
-const acr = new acrcloud({ host: "identify-ap-southeast-1.acrcloud.com", access_key: "ee1b81b47cf98cd73a0072a761558ab1", access_secret: "ya9OPe8onFAnNkyf9xMTK8qRyMGmsghfuHrIMmUI" })
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-let q = m.quoted ? m.quoted : m
-if (!q.mimetype || (!q.mimetype.includes("audio") && !q.mimetype.includes("video"))) {
-return m.reply("❀ Por favor, responde al audio del cual deseas buscar el título.")
-}
-let buffer = await q.download()
-try {
-await m.react('🕒')
-let data = await whatmusic(buffer)
-if (!data.length) {
-await m.react('✖️')
-return m.reply("✧ No se encontraron datos de la canción")
-}
-let cap = "*乂 ¡SHAZAM - MUSIC! 乂*\n\n"
-for (let result of data) {
-const enlaces = Array.isArray(result.url) ? result.url.filter(x => x) : []
-cap += `✐ Título » ${result.title}\n`
-cap += `✦ Artista » ${result.artist}\n`
-cap += `ⴵ Duración » ${result.duration}\n`
-cap += `🜸 Enlaces » ${enlaces.map(i => `\n${i}`).join("\n")}\n`
-if (enlaces.length) cap += "••••••••••••••••••••••••••••••••••••••\n"
-}
-await conn.relayMessage(m.chat, {
-extendedTextMessage: {
-text: cap,
-contextInfo: {
-externalAdReply: {
-title: '✧ Whats • Music ✧',
-body: dev,
-mediaType: 1,
-previewType: 0,
-renderLargerThumbnail: true,
-thumbnail: await (await fetch('https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1742781294508.jpeg')).buffer(),
-sourceUrl: redes
-}}}}, { quoted: m })
-await m.react('✔️')
-} catch (error) {
-await m.react('✖️')
-m.reply(`⚠︎ Se ha producido un problema.\n> Usa *${usedPrefix}report* para informarlo.\n\n` + error.message)
-}}
+const acr = new acrcloud({
+  host: "identify-ap-southeast-1.acrcloud.com",
+  access_key: "ee1b81b47cf98cd73a0072a761558ab1",
+  access_secret: "ya9OPe8onFAnNkyf9xMTK8qRyMGmsghfuHrIMmUI"
+})
 
-handler.help = ["whatmusic"]
-handler.tags = ["tools"]
-handler.command = ["whatmusic", "shazam"]
-handler.group = true
+let handler = async (m, { conn, usedPrefix, command }) => {
+  const media = m.quoted || m;
+  const mime = (media.msg || media).mimetype || '';
+  const isVideo = media.mtype === 'videoMessage';
+  const isAudio = mime.includes('audio');
 
-export default handler
+  if (!isVideo && !isAudio)
+    return m.reply(`「✦」Por favor, responde a un *audio* o adjunta un *video corto* junto con el comando: \`${usedPrefix + command}\``);
 
-async function whatmusic(buffer) {
-let res = await acr.identify(buffer)
-let data = res?.metadata
-if (!data || !Array.isArray(data.music)) return []
-return data.music.map(a => ({ title: a.title, artist: a.artists?.[0]?.name || "Desconocido", duration: toTime(a.duration_ms), url: Object.keys(a.external_metadata || {}).map(i => i === "youtube" ? "https://youtu.be/" + a.external_metadata[i].vid : i === "deezer" ? "https://www.deezer.com/us/track/" + a.external_metadata[i].track.id : i === "spotify" ? "https://open.spotify.com/track/" + a.external_metadata[i].track.id : "").filter(Boolean) }))
+  try {
+    m.react('🎵');
+    const buffer = await media.download();
+    const data = await recognizeSong(buffer);
+
+    if (!data.length)
+      return m.reply(`${e} No se pudo identificar la canción. Intenta con otra parte del audio.`);
+
+    let caption = `「✦」 *Resultado de búsqueda musical*\n\n`;
+    for (const song of data) {
+      caption += `✐ *Título:* ${song.title}\n`;
+      caption += `✦ *Artista:* ${song.artist}\n`;
+      caption += `ⴵ *Duración:* ${song.duration}\n`;
+      if (song.url.length) {
+        caption += `🜸 *Enlaces:* ${song.url.join("\n")}\n`;
+      }
+      caption += "\n";
+    }
+
+    await conn.sendMessage(m.chat, {
+      text: caption.trim(),
+      contextInfo: {
+        externalAdReply: {
+          title: '✧ Whats • Music ✧',
+          body: dev,
+          thumbnail: await (await fetch('https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1742781294508.jpeg')).buffer(),
+          thumbnailUrl: redes,
+          mediaType: 1,
+          renderLargerThumbnail: true,
+          sourceUrl: redes
+        }
+      }
+    }, { quoted: m });
+
+    m.react('✅');
+  } catch (err) {
+    console.error(err);
+    m.reply(`Ocurrió un error al analizar el archivo. Intenta con otro audio/video.`);
+  }
+};
+
+handler.command = ["whatmusic", "quemusica", "shazam"];
+handler.group = true;
+export default handler;
+async function recognizeSong(buffer) {
+  const result = await acr.identify(buffer);
+  const musicList = result?.metadata?.music;
+  if (!musicList?.length) return [];
+
+  return musicList.map(track => ({
+    title: track.title,
+    artist: track.artists?.[0]?.name || "Desconocido",
+    duration: msToTime(track.duration_ms),
+    url: [
+      track.external_metadata?.youtube?.vid ? `https://youtu.be/${track.external_metadata.youtube.vid}` : null,
+      track.external_metadata?.deezer?.track?.id ? `https://www.deezer.com/track/${track.external_metadata.deezer.track.id}` : null,
+      track.external_metadata?.spotify?.track?.id ? `https://open.spotify.com/track/${track.external_metadata.spotify.track.id}` : null
+    ].filter(Boolean)
+  }))
 }
-function toTime(ms) {
-if (!ms || typeof ms !== "number") return "00:00"
-let m = Math.floor(ms / 60000)
-let s = Math.floor((ms % 60000) / 1000)
-return [m, s].map(v => v.toString().padStart(2, "0")).join(":")
+
+function msToTime(ms) {
+  let minutes = Math.floor(ms / 60000);
+  let seconds = Math.floor((ms % 60000) / 1000);
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
