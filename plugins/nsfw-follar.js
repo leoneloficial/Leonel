@@ -8,7 +8,8 @@ let handler = async (m, { conn, usedPrefix }) => {
     let who;
     if (m.isGroup) who = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : false;
    if (!db.data.chats[m.chat].nsfw && m.isGroup) return m.reply('❀ El contenido *NSFW* está desactivado en este grupo.
-n\Un *administrador* puede activarlo con:
+n\
+Un *administrador* puede activarlo con:
 » *#nsfw on*');
     if (!who) throw 'Etiqueta o menciona a alguien';
 
