@@ -7,7 +7,9 @@ import { sticker } from '../lib/sticker.js';
 let handler = async (m, { conn, usedPrefix }) => {
     let who;
     if (m.isGroup) who = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : false;
-   if (!db.data.chats[m.chat].nsfw && m.isGroup) return m.reply('❀ El contenido *NSFW* está desactivado en este grupo. Un administrador puede activarlo con » *.nsfw on*');
+   if (!db.data.chats[m.chat].nsfw && m.isGroup) return m.reply('❀ El contenido *NSFW* está desactivado en este grupo. 
+
+Un administrador puede activarlo con » *.nsfw on*');
     if (!who) throw 'Etiqueta o menciona a alguien';
 
     let user = global.db.data.users[who];
