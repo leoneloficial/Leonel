@@ -321,6 +321,14 @@ let txt = `̮᷼ᮬ︵۪۪۪۪۪᷼⏜ᩘ۪۪۪᷼⏜  ׅ   ׄ❀ ׄ   ׅ  ⏜�
 ╰ׅ͜─֟͜─͜─ٞ͜─͜─๊͜─͜─๋͜─⃔═̶፝֟͜═̶⃔─๋͜─͜─͜─๊͜─ٞ͜─͜─֟͜┈ࠢ͜╯ׅׅ
 
 »  ⊹˚୨ •(=^●ω●^=)• *ANIME* 
+✿ *#violar* + <mencion>
+> ⸙ violar a un usuario 
+✿ *#nalguear* + <mencion>
+> ⸙ nalguear a un usuario 
+✿ *#anal* + <mencion>
+> ⸙ cojerte a alguien por el culo
+✿ *#mamada* + <mencion>
+> ⸙ echarle una mamada a un usuario.
 > ✿ Comandos de reacciones de anime.
 ✿ *#angry • #enojado* + <mencion>
 > ⸙ Estar enojado
