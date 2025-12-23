@@ -73,13 +73,7 @@ function getSenderJid(msg) {
 }
 
 function getBotJidRaw(conn) {
-  return (
-    conn?.user?.jid ||
-    conn?.user?.id ||
-    conn?.user?.user?.jid ||
-    conn?.user?.user?.id ||
-    ""
-  )
+  return conn?.user?.jid || conn?.user?.id || conn?.user?.user?.jid || conn?.user?.user?.id || ""
 }
 
 function isWsOpen(sock) {
@@ -100,6 +94,25 @@ function getAllOnlineBots() {
   ]
   if (global.conn?.user?.jid && !subBots.includes(global.conn.user.jid)) subBots.push(global.conn.user.jid)
   return subBots
+}
+
+function getPrefixList(conn) {
+  const p = conn?.prefix || global.prefix
+  if (typeof p === "string") return [p]
+  if (Array.isArray(p)) return p.filter((x) => typeof x === "string" && x.length)
+  return ["."]
+}
+
+function getCommandQuick(conn, text) {
+  if (typeof text !== "string" || !text.trim()) return ""
+  const prefixes = getPrefixList(conn)
+  for (const pref of prefixes) {
+    if (text.startsWith(pref)) {
+      const noPrefix = text.slice(pref.length).trim()
+      return (noPrefix.split(/\s+/)[0] || "").toLowerCase()
+    }
+  }
+  return ""
 }
 
 async function getGroupContext(conn, m) {
@@ -302,6 +315,11 @@ export async function handler(chatUpdate) {
 
     const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(m.sender)
 
+    if (m.isGroup && chat?.isBanned && !isROwner) {
+      const cmdQuick = getCommandQuick(this, m.text)
+      if (cmdQuick !== "bot") return
+    }
+
     if (opts["queque"] && m.text && !isPrems) {
       const queque = this.msgqueque
       const time = 1000 * 5
@@ -338,21 +356,6 @@ export async function handler(chatUpdate) {
       if (!plugin || plugin.disabled) continue
 
       const __filename = join(___dirname, name)
-
-      if (typeof plugin.all === "function") {
-        try {
-          await plugin.all.call(this, m, {
-            chatUpdate,
-            __dirname: ___dirname,
-            __filename,
-            user,
-            chat,
-            settings,
-          })
-        } catch (err) {
-          console.error(err)
-        }
-      }
 
       if (!opts["restrict"]) if (plugin.tags && plugin.tags.includes("admin")) continue
 
@@ -421,10 +424,15 @@ export async function handler(chatUpdate) {
         global.comando = command
 
         if (!isOwners && settings.self) return
-        if (m.id?.startsWith("NJX-") || (m.id?.startsWith("BAE5") && m.id.length === 16) || (m.id?.startsWith("B24E") && m.id.length === 20))
+        if (
+          m.id?.startsWith("NJX-") ||
+          (m.id?.startsWith("BAE5") && m.id.length === 16) ||
+          (m.id?.startsWith("B24E") && m.id.length === 20)
+        )
           return
 
         const bypassPrimaryCommands = new Set(["delprimary", "setprimary"])
+
         if (chat?.primaryBot && chat.primaryBot !== this.user.jid && !bypassPrimaryCommands.has(command)) {
           const primary = normalizeJid(this, chat.primaryBot)
           const primaryConn = (global.conns || []).find(
@@ -479,12 +487,23 @@ export async function handler(chatUpdate) {
           }
         }
 
-        if (!isOwners && !m.chat.endsWith("g.us") && !/code|p|ping|qr|estado|status|infobot|botinfo|report|reportar|invite|join|logout|suggest|help|menu/gim.test(m.text))
+        if (
+          !isOwners &&
+          !m.chat.endsWith("g.us") &&
+          !/code|p|ping|qr|estado|status|infobot|botinfo|report|reportar|invite|join|logout|suggest|help|menu/gim.test(m.text)
+        )
           return
 
         const adminMode = chat.modoadmin || false
         const needsAdmin =
-          plugin.botAdmin || plugin.admin || plugin.group || plugin || noPrefix || pluginPrefix || m.text.slice(0, 1) === pluginPrefix || plugin.command
+          plugin.botAdmin ||
+          plugin.admin ||
+          plugin.group ||
+          plugin ||
+          noPrefix ||
+          pluginPrefix ||
+          m.text.slice(0, 1) === pluginPrefix ||
+          plugin.command
 
         if (adminMode && !isOwner && m.isGroup && !isAdmin && needsAdmin) return
 
