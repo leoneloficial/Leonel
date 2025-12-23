@@ -1,5 +1,5 @@
 let handler = async (m, { conn, usedPrefix, command, isROwner }) => {
-const botname = conn.botname || global.botname
+const botname = conn.botname || conn.botName
 if (!isROwner) return
 try {
 await m.react('🕒')
