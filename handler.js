@@ -49,10 +49,15 @@ function normalizeJid(conn, jid) {
     const decode =
       typeof conn?.decodeJid === "function"
         ? conn.decodeJid.bind(conn)
-        : (j) => jidNormalizedUser(j || "")
-    return jidNormalizedUser(decode(jid) || jid)
+        : (j) => j
+
+    const d = (decode(jid) || jid).toString()
+
+    if (/@g\.us$|@broadcast$|@newsletter$/i.test(d)) return d
+
+    return jidNormalizedUser(d)
   } catch {
-    return jid ? jidNormalizedUser(jid) : ""
+    return jid || ""
   }
 }
 
