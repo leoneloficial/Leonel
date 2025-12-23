@@ -1,5 +1,5 @@
 const handler = async (m, { isOwner, isAdmin, conn, text, participants, args, command }) => {
-const botname = conn.botname || global.botname
+const botname = conn.botname || conn.botName
 const pesan = args.join` `
 const oi = `*» INFO :* ${pesan}`
 let teks = `*!  MENCION GENERAL  !*\n  *PARA ${participants.length} MIEMBROS* 🗣️\n\n ${oi}\n\n╭  ┄ 𝅄 ۪꒰ \`⡞᪲=͟͟͞${botname}≼᳞ׄ\` ꒱ ۟ 𝅄 ┄\n`
