@@ -30,7 +30,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       `> ♡ Vistas » *${vistas}*\n` +
       `> ✧︎ Duración » *${timestamp || "No disponible"}*\n` +
       `> ☁︎ Publicado » *${ago || "No disponible"}*\n` +
-      `> ➪ Link » ${url}`
+      `> ➪ Link » ${url}\n` +
+      `> ✿ API » Adonix`
 
     const thumb = (await conn.getFile(thumbnail)).data
     await conn.sendMessage(m.chat, { image: thumb, caption: info }, { quoted: m })
@@ -39,7 +40,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       const audio = await getAud(url)
       if (!audio?.url) throw "⚠ No se pudo obtener el audio."
 
-      m.reply(`> ❀ *Audio procesado. Servidor:* \`${audio.api}\``)
+     /* m.reply(`> ❀ *Audio procesado. Servidor:* \`${audio.api}\``) /*
 
       if (command === "ytmp3") {
         await conn.sendMessage(
@@ -68,7 +69,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       const video = await getVid(url)
       if (!video?.url) throw "⚠ No se pudo obtener el video."
 
-      m.reply(`> ❀ *Vídeo procesado. Servidor:* \`${video.api}\``)
+     /* m.reply(`> ❀ *Vídeo procesado. Servidor:* \`${video.api}\``) /*
 
       if (command === "ytmp4") {
         await conn.sendMessage(
