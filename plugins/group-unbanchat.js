@@ -1,10 +1,8 @@
 import fs from "fs"
 import path from "path"
-import { jidNormalizedUser } from "@whiskeysockets/baileys"
 
 const handler = async (m, { isAdmin, isROwner }) => {
   const conn = this
-
   if (global.db.data == null) await global.loadDatabase()
 
   const senderNumber = (m.sender || "").replace(/[^0-9]/g, "")
@@ -16,29 +14,20 @@ const handler = async (m, { isAdmin, isROwner }) => {
 
   const rawChatId = m.chat || m.key?.remoteJid || ""
   const decodedChatId = typeof conn?.decodeJid === "function" ? conn.decodeJid(rawChatId) : rawChatId
-
-  const normalized =
-    (decodedChatId || rawChatId || "").endsWith("@g.us")
-      ? (decodedChatId || rawChatId)
-      : jidNormalizedUser(decodedChatId || rawChatId)
-
-  const chatKeys = [
-    rawChatId,
-    decodedChatId,
-    normalized,
-    m.key?.remoteJid,
-    m.chat
-  ].filter(Boolean).filter((v, i, a) => a.indexOf(v) === i)
+  const chatId = (decodedChatId || rawChatId || "").toString()
 
   if (!global.db.data.chats) global.db.data.chats = {}
 
-  const existing = chatKeys.map(k => global.db.data.chats[k]).find(v => v) || {}
-  existing.isBanned = false
+  const keys = [rawChatId, decodedChatId, chatId, m.key?.remoteJid, m.chat]
+    .filter(Boolean)
+    .filter((v, i, a) => a.indexOf(v) === i)
 
-  for (const k of chatKeys) global.db.data.chats[k] = existing
+  const obj = keys.map(k => global.db.data.chats[k]).find(v => v) || {}
+  obj.isBanned = false
+
+  for (const k of keys) global.db.data.chats[k] = obj
 
   await global.db.write?.().catch(() => {})
-
   return m.reply("˚∩ El bot ha sido desbaneado correctamente.")
 }
 
