@@ -103,10 +103,7 @@ function getCommandQuick(conn, text) {
   return ""
 }
 
-async function getGroupContext(conn, m) {
-  const from = m?.chat || m?.key?.remoteJid || ""
-  const isGroup = typeof from === "string" && from.endsWith("@g.us")
-
+async function getGroupContext(conn, m, chatId, isGroupChat) {
   const senderRaw = m?.sender || getSenderJid(m) || m?.key?.participant || ""
   const sender = senderRaw
 
@@ -115,7 +112,7 @@ async function getGroupContext(conn, m) {
       ? conn.decodeJid.bind(conn)
       : (jid) => jidNormalizedUser(jid || "")
 
-  if (!isGroup) {
+  if (!isGroupChat) {
     return {
       groupMetadata: null,
       participants: [],
@@ -128,8 +125,8 @@ async function getGroupContext(conn, m) {
     }
   }
 
-  const cached = conn?.chats?.[from]?.metadata || null
-  const fresh = cached || (await conn.groupMetadata(from).catch(() => null))
+  const cached = conn?.chats?.[chatId]?.metadata || null
+  const fresh = cached || (await conn.groupMetadata(chatId).catch(() => null))
   const groupMetadata = fresh || {}
 
   const rawParticipants = (groupMetadata?.participants || []) || []
@@ -175,22 +172,20 @@ export async function handler(chatUpdate) {
   this.uptime = this.uptime || Date.now()
 
   if (!chatUpdate?.messages?.length) return
-  let m = chatUpdate.messages[chatUpdate.messages.length - 1]
-  if (!m) return
+  let m0 = chatUpdate.messages[chatUpdate.messages.length - 1]
+  if (!m0) return
 
   if (global.db.data == null) await global.loadDatabase()
 
   loadBotConfig(this)
 
   try {
-    m = smsg(this, m) || m
+    let m = smsg(this, m0) || m0
     if (!m) return
     m.exp = 0
 
     const chatId = m?.chat || m?.key?.remoteJid || ""
     const isGroupChat = typeof chatId === "string" && chatId.endsWith("@g.us")
-    m.chat = chatId
-    m.isGroup = isGroupChat
 
     try {
       let user = global.db.data.users[m.sender]
@@ -239,8 +234,8 @@ export async function handler(chatUpdate) {
         }
       }
 
-      let chat = global.db.data.chats[m.chat]
-      if (typeof chat !== "object") global.db.data.chats[m.chat] = {}
+      let chat = global.db.data.chats[chatId]
+      if (typeof chat !== "object") global.db.data.chats[chatId] = {}
       if (chat) {
         if (!("isBanned" in chat)) chat.isBanned = false
         if (!("isMute" in chat)) chat.isMute = false
@@ -255,7 +250,7 @@ export async function handler(chatUpdate) {
         if (!("economy" in chat)) chat.economy = true
         if (!("gacha" in chat)) chat.gacha = true
       } else {
-        global.db.data.chats[m.chat] = {
+        global.db.data.chats[chatId] = {
           isBanned: false,
           isMute: false,
           welcome: false,
@@ -292,7 +287,7 @@ export async function handler(chatUpdate) {
       if (typeof nuevo === "string" && nuevo.trim() && nuevo !== actual) user.name = nuevo
     } catch {}
 
-    const chat = global.db.data.chats[m.chat]
+    const chat = global.db.data.chats[chatId]
     const settings = global.db.data.settings[this.user.jid]
 
     const isROwner = [...global.owner.map((n) => n)]
@@ -341,7 +336,7 @@ export async function handler(chatUpdate) {
 
     m.exp += Math.ceil(Math.random() * 10)
 
-    const ctx = await getGroupContext(this, m)
+    const ctx = await getGroupContext(this, m, chatId, isGroupChat)
 
     const groupMetadata = ctx.groupMetadata || {}
     const participants = ctx.participants || []
@@ -473,12 +468,12 @@ export async function handler(chatUpdate) {
 
         m.plugin = name
 
-        await this.sendPresenceUpdate("composing", m.chat)
+        await this.sendPresenceUpdate("composing", chatId)
         global.db.data.users[m.sender].commands++
 
         if (
           !isOwners &&
-          !m.chat.endsWith("g.us") &&
+          !isGroupChat &&
           !/code|p|ping|qr|estado|status|infobot|botinfo|report|reportar|invite|join|logout|suggest|help|menu/gim.test(m.text)
         )
           return
@@ -486,7 +481,7 @@ export async function handler(chatUpdate) {
         const adminMode = chat.modoadmin || false
         const needsAdmin = Boolean(plugin.botAdmin || plugin.admin || plugin.group)
 
-        if (adminMode && !isOwner && m.isGroup && !isAdmin && needsAdmin) return
+        if (adminMode && !isOwner && isGroupChat && !isAdmin && needsAdmin) return
 
         if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) {
           fail("owner", m, this)
@@ -504,7 +499,7 @@ export async function handler(chatUpdate) {
           fail("premium", m, this)
           continue
         }
-        if (plugin.group && !m.isGroup) {
+        if (plugin.group && !isGroupChat) {
           fail("group", m, this)
           continue
         }
@@ -566,22 +561,23 @@ export async function handler(chatUpdate) {
   } catch (err) {
     console.error(err)
   } finally {
-    if (opts["queque"] && m?.text) {
-      const idx = this.msgqueque.indexOf(m.id || m.key.id)
+    if (opts["queque"] && m0?.message) {
+      const id = m0?.key?.id || m0?.id
+      const idx = this.msgqueque.indexOf(id)
       if (idx !== -1) this.msgqueque.splice(idx, 1)
     }
 
     try {
-      let user = global.db.data.users[m.sender]
-      if (m?.sender && user) user.exp += m.exp
+      let u = global.db.data.users[m0?.sender]
+      if (m0?.sender && u && isNumber(m0?.exp)) u.exp += m0.exp
     } catch {}
 
     try {
-      if (!opts["noprint"]) await (await import("./lib/print.js")).default(m, this)
+      if (!opts["noprint"]) await (await import("./lib/print.js")).default(m0, this)
     } catch (err) {
       console.warn(err)
       try {
-        console.log(m?.message)
+        console.log(m0?.message)
       } catch {}
     }
   }
