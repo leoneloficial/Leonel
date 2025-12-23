@@ -7,7 +7,7 @@ const { generateWAMessageFromContent, prepareWAMessageMedia, proto } = pkg
 
 var handler = m => m
 handler.all = async function (m) {
-const botname = this.botname || global.botname
+const botname = this.botname || conn.botName
 const icono = this.icono || global.icono
 global.canalIdM = ["120363324350463849@newsletter", "120363324350463849@newsletter"]
 global.canalNombreM = ["»  ⊹˚୨ •(=^●ω●^=)• ❀ canal - oficial ❀", "»  ⊹˚୨ •(=^●ω●^=)• ❀ canal - oficial ❀"]
