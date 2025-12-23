@@ -4,6 +4,7 @@ import path, { join } from "path"
 import fs, { unwatchFile, watchFile } from "fs"
 import chalk from "chalk"
 import ws from "ws"
+import { jidNormalizedUser } from "@whiskeysockets/baileys"
 
 const { proto } = (await import("@whiskeysockets/baileys")).default
 
@@ -43,11 +44,42 @@ function loadBotConfig(conn) {
 
 function normalizeJid(conn, jid) {
   try {
-    if (!jid) return jid
-    return conn.decodeJid ? conn.decodeJid(jid) : jid
+    if (!jid) return ""
+    const decode =
+      typeof conn?.decodeJid === "function"
+        ? conn.decodeJid.bind(conn)
+        : (j) => jidNormalizedUser(j || "")
+    return jidNormalizedUser(decode(jid) || jid)
   } catch {
-    return jid
+    return jid ? jidNormalizedUser(jid) : ""
   }
+}
+
+function getSenderJid(msg) {
+  return (
+    msg?.sender ||
+    msg?.key?.participant ||
+    msg?.participant ||
+    msg?.message?.extendedTextMessage?.contextInfo?.participant ||
+    msg?.message?.imageMessage?.contextInfo?.participant ||
+    msg?.message?.videoMessage?.contextInfo?.participant ||
+    msg?.message?.documentMessage?.contextInfo?.participant ||
+    msg?.message?.audioMessage?.contextInfo?.participant ||
+    msg?.message?.stickerMessage?.contextInfo?.participant ||
+    msg?.message?.reactionMessage?.key?.participant ||
+    msg?.message?.pollUpdateMessage?.pollCreationMessageKey?.participant ||
+    ""
+  )
+}
+
+function getBotJidRaw(conn) {
+  return (
+    conn?.user?.jid ||
+    conn?.user?.id ||
+    conn?.user?.user?.jid ||
+    conn?.user?.user?.id ||
+    ""
+  )
 }
 
 function isWsOpen(sock) {
@@ -68,6 +100,73 @@ function getAllOnlineBots() {
   ]
   if (global.conn?.user?.jid && !subBots.includes(global.conn.user.jid)) subBots.push(global.conn.user.jid)
   return subBots
+}
+
+async function getGroupContext(conn, m) {
+  const from = m?.chat || m?.key?.remoteJid || ""
+  const isGroup = from.endsWith("@g.us")
+
+  const senderRaw = m?.sender || getSenderJid(m) || m?.key?.participant || ""
+  const sender = senderRaw
+
+  const decode =
+    typeof conn?.decodeJid === "function"
+      ? conn.decodeJid.bind(conn)
+      : (jid) => jidNormalizedUser(jid || "")
+
+  if (!isGroup) {
+    return {
+      groupMetadata: null,
+      participants: [],
+      userGroup: {},
+      botGroup: {},
+      isRAdmin: false,
+      isAdmin: false,
+      isBotAdmin: false,
+      sender,
+    }
+  }
+
+  const cached = conn?.chats?.[from]?.metadata || null
+  const fresh = cached || (await conn.groupMetadata(from).catch(() => null))
+  const groupMetadata = fresh || {}
+
+  const rawParticipants = (groupMetadata?.participants || []) || []
+  const participants = rawParticipants.map((p) => {
+    const jid = p?.jid || p?.id || p?.participant || p?.user || ""
+    return {
+      id: jid,
+      jid,
+      lid: p?.lid,
+      admin: p?.admin,
+    }
+  })
+
+  const senderDecoded = jidNormalizedUser(decode(sender))
+  const botDecoded = jidNormalizedUser(decode(getBotJidRaw(conn)))
+
+  const userGroup = participants.find((u) => jidNormalizedUser(decode(u.jid)) === senderDecoded) || {}
+  const botGroup = participants.find((u) => jidNormalizedUser(decode(u.jid)) === botDecoded) || {}
+
+  const userAdmin = userGroup?.admin
+  const botAdmin = botGroup?.admin
+
+  const isUserSuper = userAdmin === "superadmin" || userAdmin === true
+  const isRAdmin = isUserSuper || false
+  const isAdmin = isUserSuper || userAdmin === "admin"
+
+  const isBotAdmin = botAdmin === "superadmin" || botAdmin === "admin" || botAdmin === true
+
+  return {
+    groupMetadata,
+    participants,
+    userGroup,
+    botGroup,
+    isRAdmin: Boolean(isRAdmin),
+    isAdmin: Boolean(isAdmin),
+    isBotAdmin: Boolean(isBotAdmin),
+    sender,
+  }
 }
 
 export async function handler(chatUpdate) {
@@ -221,31 +320,17 @@ export async function handler(chatUpdate) {
 
     m.exp += Math.ceil(Math.random() * 10)
 
-    const groupMetadata = m.isGroup
-      ? {
-          ...(this.chats?.[m.chat]?.metadata || (await this.groupMetadata(m.chat).catch(() => null)) || {}),
-        }
-      : {}
+    const ctx = await getGroupContext(this, m)
 
-    const rawParticipants = (m.isGroup ? groupMetadata?.participants : []) || []
-    const participants = rawParticipants.map((p) => ({
-      id: p.id || p.jid,
-      jid: p.jid || p.id,
-      lid: p.lid,
-      admin: p.admin,
-    }))
+    const groupMetadata = ctx.groupMetadata || {}
+    const participants = ctx.participants || []
+    const userGroup = ctx.userGroup || {}
+    const botGroup = ctx.botGroup || {}
 
-    const userGroup = m.isGroup
-      ? participants.find((u) => normalizeJid(this, u.id) === normalizeJid(this, m.sender)) || {}
-      : {}
+    const isRAdmin = ctx.isRAdmin || false
+    const isAdmin = ctx.isAdmin || false
+    const isBotAdmin = ctx.isBotAdmin || false
 
-    const botGroup = m.isGroup
-      ? participants.find((u) => normalizeJid(this, u.id) === normalizeJid(this, this.user.jid)) || {}
-      : {}
-
-    const isRAdmin = userGroup?.admin === "superadmin" || false
-    const isAdmin = isRAdmin || userGroup?.admin === "admin" || false
-    const isBotAdmin = !!botGroup?.admin
 
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), "./plugins")
 
