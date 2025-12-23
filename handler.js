@@ -331,7 +331,6 @@ export async function handler(chatUpdate) {
     const isAdmin = ctx.isAdmin || false
     const isBotAdmin = ctx.isBotAdmin || false
 
-
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), "./plugins")
 
     for (const name in global.plugins) {
@@ -426,7 +425,6 @@ export async function handler(chatUpdate) {
           return
 
         const bypassPrimaryCommands = new Set(["delprimary", "setprimary"])
-
         if (chat?.primaryBot && chat.primaryBot !== this.user.jid && !bypassPrimaryCommands.has(command)) {
           const primary = normalizeJid(this, chat.primaryBot)
           const primaryConn = (global.conns || []).find(
@@ -462,8 +460,9 @@ export async function handler(chatUpdate) {
         if (chat) {
           const botId = this.user.jid
           const primaryBotId = chat.primaryBot
+          const bypassBannedCommands = new Set(["bot", "setprimary", "delprimary"])
 
-          if (name !== "group-banchat.js" && chat?.isBanned && !isROwner) {
+          if (chat?.isBanned && !isROwner && !bypassBannedCommands.has(command)) {
             if (!primaryBotId || primaryBotId === botId) {
               const aviso = `ꕥ El bot *${global.botname || this.botName || "Bot"}* está desactivado en este grupo\n\n> ✦ Un *administrador* puede activarlo con el comando:\n> » *${usedPrefix}bot on*`.trim()
               await m.reply(aviso)
@@ -472,7 +471,7 @@ export async function handler(chatUpdate) {
           }
 
           if (m.text && user.banned && !isROwner) {
-            const mensaje = `ꕥ Estas baneado/a, no puedes usar comandos en este bot!\n\n> ● *Razón ›* ${user.bannedReason}\n\n> ● Si este Bot es cuenta oficial y tienes evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`.trim()
+            const mensaje = `ꕥ Estas baneado/a, no puedes usar comandos en este bot!\n\n> ● Razón › ${user.bannedReason}\n\n> ● Si este Bot es cuenta oficial y tienes evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`.trim()
             if (!primaryBotId || primaryBotId === botId) {
               await m.reply(mensaje)
               return
