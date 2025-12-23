@@ -46,18 +46,12 @@ function loadBotConfig(conn) {
 function normalizeJid(conn, jid) {
   try {
     if (!jid) return ""
-    const decode =
-      typeof conn?.decodeJid === "function"
-        ? conn.decodeJid.bind(conn)
-        : (j) => j
-
+    const decode = typeof conn?.decodeJid === "function" ? conn.decodeJid.bind(conn) : (j) => j
     const d = (decode(jid) || jid).toString()
-
     if (/@g\.us$|@broadcast$|@newsletter$/i.test(d)) return d
-
     return jidNormalizedUser(d)
   } catch {
-    return jid || ""
+    return (jid || "").toString()
   }
 }
 
@@ -91,13 +85,8 @@ function isWsOpen(sock) {
 }
 
 async function getGroupContext(conn, m, chatId, isGroupChat) {
-  const senderRaw = m?.sender || getSenderJid(m) || m?.key?.participant || ""
+  const senderRaw = (m?.sender || getSenderJid(m) || m?.key?.participant || "").toString()
   const sender = senderRaw
-
-  const decode =
-    typeof conn?.decodeJid === "function"
-      ? conn.decodeJid.bind(conn)
-      : (jid) => jidNormalizedUser(jid || "")
 
   if (!isGroupChat) {
     return {
@@ -118,17 +107,15 @@ async function getGroupContext(conn, m, chatId, isGroupChat) {
 
   const rawParticipants = (groupMetadata?.participants || []) || []
   const participants = rawParticipants.map((p) => {
-    const jid = p?.jid || p?.id || p?.participant || p?.user || ""
+    const jid = (p?.jid || p?.id || p?.participant || p?.user || "").toString()
     return { id: jid, jid, lid: p?.lid, admin: p?.admin }
   })
 
-  const senderDecoded = jidNormalizedUser(decode(sender))
-  const botDecoded = jidNormalizedUser(decode(getBotJidRaw(conn)))
+  const senderDecoded = normalizeJid(conn, sender)
+  const botDecoded = normalizeJid(conn, getBotJidRaw(conn))
 
-  const userGroup =
-    participants.find((u) => jidNormalizedUser(decode(u.jid)) === senderDecoded) || {}
-  const botGroup =
-    participants.find((u) => jidNormalizedUser(decode(u.jid)) === botDecoded) || {}
+  const userGroup = participants.find((u) => normalizeJid(conn, u.jid) === senderDecoded) || {}
+  const botGroup = participants.find((u) => normalizeJid(conn, u.jid) === botDecoded) || {}
 
   const userAdmin = userGroup?.admin
   const botAdmin = botGroup?.admin
@@ -173,7 +160,7 @@ export async function handler(chatUpdate) {
     if (!m) return
     m.exp = 0
 
-    chatId = m?.chat || rawMsg?.key?.remoteJid || m?.key?.remoteJid || ""
+    chatId = (m?.chat || rawMsg?.key?.remoteJid || m?.key?.remoteJid || "").toString()
     const normalizedChatId = normalizeJid(this, chatId)
 
     const chatKeys = [
@@ -184,69 +171,53 @@ export async function handler(chatUpdate) {
       m?.key?.remoteJid,
     ]
       .filter(Boolean)
+      .map((v) => v.toString())
       .filter((value, index, self) => self.indexOf(value) === index)
 
-    const existingChat = chatKeys.map((key) => global.db.data?.chats?.[key]).find((v) => v)
-    if (existingChat && global.db.data?.chats && !global.db.data.chats[chatId]) {
-      global.db.data.chats[chatId] = existingChat
-    }
+    if (!global.db.data.chats) global.db.data.chats = {}
 
-    if (normalizedChatId && normalizedChatId !== chatId) {
-      if (global.db.data?.chats?.[chatId] && !global.db.data?.chats?.[normalizedChatId]) {
-        global.db.data.chats[normalizedChatId] = global.db.data.chats[chatId]
-      }
-      chatId = normalizedChatId
-    }
+    const foundChats = chatKeys
+      .map((k) => global.db.data.chats[k])
+      .filter((v) => v && typeof v === "object")
+
+    const baseChat = foundChats[0] || global.db.data.chats[chatId] || {}
+    const anyBanned = foundChats.some((c) => c?.isBanned === true)
+    if (anyBanned) baseChat.isBanned = true
+
+    for (const k of chatKeys) global.db.data.chats[k] = baseChat
+
+    if (normalizedChatId && normalizedChatId !== chatId) chatId = normalizedChatId
 
     isGroupChat = typeof chatId === "string" && chatId.endsWith("@g.us")
     if (typeof m.text !== "string") m.text = ""
 
     try {
+      if (!global.db.data.users) global.db.data.users = {}
+      if (!global.db.data.settings) global.db.data.settings = {}
+
       let user = global.db.data.users[m.sender]
       if (typeof user !== "object") global.db.data.users[m.sender] = {}
-      if (user) {
-        if (!("name" in user)) user.name = m.name
-        if (!("exp" in user) || !isNumber(user.exp)) user.exp = 0
-        if (!("coin" in user) || !isNumber(user.coin)) user.coin = 0
-        if (!("bank" in user) || !isNumber(user.bank)) user.bank = 0
-        if (!("level" in user) || !isNumber(user.level)) user.level = 0
-        if (!("health" in user) || !isNumber(user.health)) user.health = 100
-        if (!("genre" in user)) user.genre = ""
-        if (!("birth" in user)) user.birth = ""
-        if (!("marry" in user)) user.marry = ""
-        if (!("description" in user)) user.description = ""
-        if (!("packstickers" in user)) user.packstickers = null
-        if (!("premium" in user)) user.premium = false
-        if (!("premiumTime" in user)) user.premiumTime = 0
-        if (!("banned" in user)) user.banned = false
-        if (!("bannedReason" in user)) user.bannedReason = ""
-        if (!("commands" in user) || !isNumber(user.commands)) user.commands = 0
-        if (!("afk" in user) || !isNumber(user.afk)) user.afk = -1
-        if (!("afkReason" in user)) user.afkReason = ""
-        if (!("warn" in user) || !isNumber(user.warn)) user.warn = 0
-      } else {
-        global.db.data.users[m.sender] = {
-          name: m.name,
-          exp: 0,
-          coin: 0,
-          bank: 0,
-          level: 0,
-          health: 100,
-          genre: "",
-          birth: "",
-          marry: "",
-          description: "",
-          packstickers: null,
-          premium: false,
-          premiumTime: 0,
-          banned: false,
-          bannedReason: "",
-          commands: 0,
-          afk: -1,
-          afkReason: "",
-          warn: 0,
-        }
-      }
+      user = global.db.data.users[m.sender]
+
+      if (!("name" in user)) user.name = m.name
+      if (!("exp" in user) || !isNumber(user.exp)) user.exp = 0
+      if (!("coin" in user) || !isNumber(user.coin)) user.coin = 0
+      if (!("bank" in user) || !isNumber(user.bank)) user.bank = 0
+      if (!("level" in user) || !isNumber(user.level)) user.level = 0
+      if (!("health" in user) || !isNumber(user.health)) user.health = 100
+      if (!("genre" in user)) user.genre = ""
+      if (!("birth" in user)) user.birth = ""
+      if (!("marry" in user)) user.marry = ""
+      if (!("description" in user)) user.description = ""
+      if (!("packstickers" in user)) user.packstickers = null
+      if (!("premium" in user)) user.premium = false
+      if (!("premiumTime" in user) || !isNumber(user.premiumTime)) user.premiumTime = 0
+      if (!("banned" in user)) user.banned = false
+      if (!("bannedReason" in user)) user.bannedReason = ""
+      if (!("commands" in user) || !isNumber(user.commands)) user.commands = 0
+      if (!("afk" in user) || !isNumber(user.afk)) user.afk = -1
+      if (!("afkReason" in user)) user.afkReason = ""
+      if (!("warn" in user) || !isNumber(user.warn)) user.warn = 0
 
       let chat = global.db.data.chats[chatId]
       if (typeof chat !== "object") global.db.data.chats[chatId] = {}
@@ -272,16 +243,8 @@ export async function handler(chatUpdate) {
       if (!("self" in settings)) settings.self = false
       if (!("jadibotmd" in settings)) settings.jadibotmd = true
 
-      if (chat && Array.isArray(chatKeys)) {
-        for (const key of chatKeys) {
-          if (key && !global.db.data.chats[key]) global.db.data.chats[key] = chat
-        }
-      }
-
-      if (normalizedChatId && normalizedChatId !== chatId) {
-        if (global.db.data.chats[chatId] && !global.db.data.chats[normalizedChatId]) {
-          global.db.data.chats[normalizedChatId] = global.db.data.chats[chatId]
-        }
+      for (const k of chatKeys) {
+        if (k) global.db.data.chats[k] = chat
       }
     } catch (e) {
       console.error(e)
@@ -298,7 +261,7 @@ export async function handler(chatUpdate) {
     const botJidKey = normalizeJid(this, getBotJidRaw(this))
     const settings = global.db.data.settings[botJidKey] || {}
 
-    const isROwner = [...global.owner.map((n) => n)]
+    const isROwner = [...(global.owner || []).map((n) => n)]
       .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
       .includes(m.sender)
 
@@ -306,14 +269,13 @@ export async function handler(chatUpdate) {
 
     const isPrems =
       isROwner ||
-      (global.prems || [])
-        .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
-        .includes(m.sender) ||
+      (global.prems || []).map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net").includes(m.sender) ||
       user.premium === true
 
-    const isOwners = [botJidKey, ...(global.owner || []).map((n) => normalizeJid(this, n + "@s.whatsapp.net"))].includes(
-      normalizeJid(this, m.sender)
-    )
+    const isOwners = [
+      botJidKey,
+      ...(global.owner || []).map((n) => normalizeJid(this, n + "@s.whatsapp.net")),
+    ].includes(normalizeJid(this, m.sender))
 
     if (opts["queque"] && m.text && !isPrems) {
       const queque = this.msgqueque
@@ -445,6 +407,21 @@ export async function handler(chatUpdate) {
           "setprimary",
           "delprimary",
         ])
+
+        if (command === "unbanchat" || command === "desbanearbot") {
+          const canon = chatId
+          const chatsDb = global.db.data.chats || {}
+          for (const k of Object.keys(chatsDb)) {
+            if (!k) continue
+            try {
+              if (k === canon || normalizeJid(this, k) === canon) {
+                if (chatsDb[k] && typeof chatsDb[k] === "object") chatsDb[k].isBanned = false
+              }
+            } catch {}
+          }
+          if (chat && typeof chat === "object") chat.isBanned = false
+          await global.db.write?.().catch(() => {})
+        }
 
         if (chat?.isBanned && !bypassBannedCommands.has(command)) return
 
@@ -590,8 +567,7 @@ export async function handler(chatUpdate) {
           chat: chatId || m?.chat || rawMsg?.key?.remoteJid || "",
           sender: (m?.sender || getSenderJid(rawMsg) || ""),
         }
-        if (printable.sender && printable.chat)
-          await (await import("./lib/print.js")).default(printable, this)
+        if (printable.sender && printable.chat) await (await import("./lib/print.js")).default(printable, this)
       }
     } catch (err) {
       console.warn(err)
@@ -610,7 +586,7 @@ global.dfail = (type, m, conn) => {
     admin: `『✦』El comando *${global.comando || ""}* solo puede ser usado por los administradores del grupo.`,
     botAdmin: `『✦』Para ejecutar el comando *${global.comando || ""}* debo ser administrador del grupo.`,
   }[type]
-  if (msg) return conn.reply(m.chat, msg, m, rcanal).then(() => m.react("✖️"))
+  if (msg) return conn.reply(m.chat, msg, m).then(() => m.react("✖️")).catch(() => {})
 }
 
 let file = global.__filename(import.meta.url, true)
