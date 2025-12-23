@@ -314,10 +314,19 @@ export async function handler(chatUpdate) {
       user.premium === true
 
     const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(m.sender)
-
     if (m.isGroup && chat?.isBanned && !isROwner) {
       const cmdQuick = getCommandQuick(this, m.text)
-      if (cmdQuick !== "bot") return
+      const allowedWhenBanned = new Set([
+        "bot",
+        "banchat",
+        "banearbot",
+        "unbanchat",
+        "desbanearbot",
+        "setprimary",
+        "delprimary",
+      ])
+      if (!cmdQuick) return
+      if (!allowedWhenBanned.has(cmdQuick)) return
     }
 
     if (opts["queque"] && m.text && !isPrems) {
@@ -431,7 +440,7 @@ export async function handler(chatUpdate) {
         )
           return
 
-        const bypassPrimaryCommands = new Set(["delprimary", "setprimary"])
+        const bypassPrimaryCommands = new Set(["delprimary", "setprimary", "banchat", "banearbot", "unbanchat", "desbanearbot", "bot"])
 
         if (chat?.primaryBot && chat.primaryBot !== this.user.jid && !bypassPrimaryCommands.has(command)) {
           const primary = normalizeJid(this, chat.primaryBot)
@@ -465,27 +474,8 @@ export async function handler(chatUpdate) {
         await this.sendPresenceUpdate("composing", m.chat)
         global.db.data.users[m.sender].commands++
 
-        if (chat) {
-          const botId = this.user.jid
-          const primaryBotId = chat.primaryBot
-          const bypassBannedCommands = new Set(["bot", "setprimary", "delprimary"])
-
-          if (chat?.isBanned && !isROwner && !bypassBannedCommands.has(command)) {
-            if (!primaryBotId || primaryBotId === botId) {
-              const aviso = `ꕥ El bot *${global.botname || this.botName || "Bot"}* está desactivado en este grupo\n\n> ✦ Un *administrador* puede activarlo con el comando:\n> » *${usedPrefix}bot on*`.trim()
-              await m.reply(aviso)
-              return
-            }
-          }
-
-          if (m.text && user.banned && !isROwner) {
-            const mensaje = `ꕥ Estas baneado/a, no puedes usar comandos en este bot!\n\n> ● Razón › ${user.bannedReason}\n\n> ● Si este Bot es cuenta oficial y tienes evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`.trim()
-            if (!primaryBotId || primaryBotId === botId) {
-              await m.reply(mensaje)
-              return
-            }
-          }
-        }
+        // (opcional) aquí ya no hace falta lógica extra de isBanned,
+        // porque el bloqueo real se hace ARRIBA antes de ejecutar plugins.
 
         if (
           !isOwners &&
@@ -495,15 +485,7 @@ export async function handler(chatUpdate) {
           return
 
         const adminMode = chat.modoadmin || false
-        const needsAdmin =
-          plugin.botAdmin ||
-          plugin.admin ||
-          plugin.group ||
-          plugin ||
-          noPrefix ||
-          pluginPrefix ||
-          m.text.slice(0, 1) === pluginPrefix ||
-          plugin.command
+        const needsAdmin = Boolean(plugin.botAdmin || plugin.admin || plugin.group)
 
         if (adminMode && !isOwner && m.isGroup && !isAdmin && needsAdmin) return
 
