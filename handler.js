@@ -132,19 +132,16 @@ async function getGroupContext(conn, m, chatId, isGroupChat) {
   const rawParticipants = (groupMetadata?.participants || []) || []
   const participants = rawParticipants.map((p) => {
     const jid = p?.jid || p?.id || p?.participant || p?.user || ""
-    return {
-      id: jid,
-      jid,
-      lid: p?.lid,
-      admin: p?.admin,
-    }
+    return { id: jid, jid, lid: p?.lid, admin: p?.admin }
   })
 
   const senderDecoded = jidNormalizedUser(decode(sender))
   const botDecoded = jidNormalizedUser(decode(getBotJidRaw(conn)))
 
-  const userGroup = participants.find((u) => jidNormalizedUser(decode(u.jid)) === senderDecoded) || {}
-  const botGroup = participants.find((u) => jidNormalizedUser(decode(u.jid)) === botDecoded) || {}
+  const userGroup =
+    participants.find((u) => jidNormalizedUser(decode(u.jid)) === senderDecoded) || {}
+  const botGroup =
+    participants.find((u) => jidNormalizedUser(decode(u.jid)) === botDecoded) || {}
 
   const userAdmin = userGroup?.admin
   const botAdmin = botGroup?.admin
@@ -190,6 +187,7 @@ export async function handler(chatUpdate) {
 
     chatId = m?.chat || rawMsg?.key?.remoteJid || m?.key?.remoteJid || ""
     const normalizedChatId = normalizeJid(this, chatId)
+
     const chatKeys = [
       chatId,
       normalizedChatId,
@@ -200,7 +198,7 @@ export async function handler(chatUpdate) {
       .filter(Boolean)
       .filter((value, index, self) => self.indexOf(value) === index)
 
-    const existingChat = chatKeys.map((key) => global.db.data?.chats?.[key]).find((value) => value)
+    const existingChat = chatKeys.map((key) => global.db.data?.chats?.[key]).find((v) => v)
     if (existingChat && global.db.data?.chats && !global.db.data.chats[chatId]) {
       global.db.data.chats[chatId] = existingChat
     }
@@ -211,8 +209,8 @@ export async function handler(chatUpdate) {
       }
       chatId = normalizedChatId
     }
-    isGroupChat = typeof chatId === "string" && chatId.endsWith("@g.us")
 
+    isGroupChat = typeof chatId === "string" && chatId.endsWith("@g.us")
     if (typeof m.text !== "string") m.text = ""
 
     try {
@@ -316,11 +314,10 @@ export async function handler(chatUpdate) {
     const chat = global.db.data.chats[chatId]
     if (chat && Array.isArray(chatKeys)) {
       for (const key of chatKeys) {
-        if (key && !global.db.data.chats[key]) {
-          global.db.data.chats[key] = chat
-        }
+        if (key && !global.db.data.chats[key]) global.db.data.chats[key] = chat
       }
     }
+
     const settings = global.db.data.settings[this.user.jid]
 
     const isROwner = [...global.owner.map((n) => n)]
@@ -331,10 +328,14 @@ export async function handler(chatUpdate) {
 
     const isPrems =
       isROwner ||
-      global.prems.map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net").includes(m.sender) ||
+      global.prems
+        .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
+        .includes(m.sender) ||
       user.premium === true
 
-    const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(m.sender)
+    const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(
+      m.sender
+    )
 
     const allowedWhenBanned = new Set([
       "bot",
@@ -346,7 +347,7 @@ export async function handler(chatUpdate) {
       "delprimary",
     ])
 
-    if (isGroupChat && chat?.isBanned && !isROwner) {
+    if (isGroupChat && global.db.data.chats[chatId].isBanned && !isROwner) {
       const cmdQuick = getCommandQuick(this, m.text)
       if (!cmdQuick) return
       if (!allowedWhenBanned.has(cmdQuick)) return
@@ -371,7 +372,6 @@ export async function handler(chatUpdate) {
     m.exp += Math.ceil(Math.random() * 10)
 
     const ctx = await getGroupContext(this, m, chatId, isGroupChat)
-
     const groupMetadata = ctx.groupMetadata || {}
     const participants = ctx.participants || []
     const userGroup = ctx.userGroup || {}
@@ -388,9 +388,7 @@ export async function handler(chatUpdate) {
       const commands = Array.isArray(plugin.command) ? plugin.command : [plugin.command]
       return commands.some((cmd) => {
         if (cmd instanceof RegExp) {
-          for (const allowed of allowedWhenBanned) {
-            if (cmd.test(allowed)) return true
-          }
+          for (const allowed of allowedWhenBanned) if (cmd.test(allowed)) return true
           return false
         }
         return allowedWhenBanned.has(cmd)
@@ -401,9 +399,7 @@ export async function handler(chatUpdate) {
       const plugin = global.plugins[name]
       if (!plugin || plugin.disabled) continue
 
-      if (isGroupChat && chat?.isBanned && !isROwner && !isAllowedWhenBanned(plugin)) {
-        continue
-      }
+      if (isGroupChat && chat?.isBanned && !isROwner && !isAllowedWhenBanned(plugin)) continue
 
       const __filename = join(___dirname, name)
 
@@ -474,6 +470,7 @@ export async function handler(chatUpdate) {
         global.comando = command
 
         if (!isOwners && settings.self) return
+
         if (
           m.id?.startsWith("NJX-") ||
           (m.id?.startsWith("BAE5") && m.id.length === 16) ||
@@ -481,7 +478,19 @@ export async function handler(chatUpdate) {
         )
           return
 
-        const bypassPrimaryCommands = new Set(["delprimary", "setprimary", "banchat", "banearbot", "unbanchat", "desbanearbot", "bot"])
+        if (isGroupChat && global.db.data.chats[chatId].isBanned && !isROwner) {
+          if (!allowedWhenBanned.has(command)) return
+        }
+
+        const bypassPrimaryCommands = new Set([
+          "delprimary",
+          "setprimary",
+          "banchat",
+          "banearbot",
+          "unbanchat",
+          "desbanearbot",
+          "bot",
+        ])
 
         if (chat?.primaryBot && chat.primaryBot !== this.user.jid && !bypassPrimaryCommands.has(command)) {
           const primary = normalizeJid(this, chat.primaryBot)
@@ -491,13 +500,9 @@ export async function handler(chatUpdate) {
 
           const primaryInGroup = !!participants.find((p) => normalizeJid(this, p.id) === primary)
 
-          if (primary === normalizeJid(this, global.conn?.user?.jid)) {
-            throw false
-          }
+          if (primary === normalizeJid(this, global.conn?.user?.jid)) throw false
 
-          if (primaryConn && primaryInGroup) {
-            throw false
-          }
+          if (primaryConn && primaryInGroup) throw false
 
           if (primaryConn && !primaryInGroup) {
             chat.primaryBot = null
@@ -511,14 +516,15 @@ export async function handler(chatUpdate) {
         if (!isAccept) continue
 
         m.plugin = name
-
         await this.sendPresenceUpdate("composing", chatId)
         global.db.data.users[m.sender].commands++
 
         if (
           !isOwners &&
           !isGroupChat &&
-          !/code|p|ping|qr|estado|status|infobot|botinfo|report|reportar|invite|join|logout|suggest|help|menu/gim.test(m.text)
+          !/code|p|ping|qr|estado|status|infobot|botinfo|report|reportar|invite|join|logout|suggest|help|menu/gim.test(
+            m.text
+          )
         )
           return
 
@@ -621,10 +627,11 @@ export async function handler(chatUpdate) {
       if (!opts["noprint"]) {
         const printable = {
           ...(m || {}),
-          chat: chatId || (m?.chat || rawMsg?.key?.remoteJid || ""),
+          chat: chatId || m?.chat || rawMsg?.key?.remoteJid || "",
           sender: (m?.sender || getSenderJid(rawMsg) || ""),
         }
-        if (printable.sender && printable.chat) await (await import("./lib/print.js")).default(printable, this)
+        if (printable.sender && printable.chat)
+          await (await import("./lib/print.js")).default(printable, this)
       }
     } catch (err) {
       console.warn(err)
