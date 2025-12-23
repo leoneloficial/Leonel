@@ -190,6 +190,21 @@ export async function handler(chatUpdate) {
 
     chatId = m?.chat || rawMsg?.key?.remoteJid || m?.key?.remoteJid || ""
     const normalizedChatId = normalizeJid(this, chatId)
+    const chatKeys = [
+      chatId,
+      normalizedChatId,
+      m?.chat,
+      rawMsg?.key?.remoteJid,
+      m?.key?.remoteJid,
+    ]
+      .filter(Boolean)
+      .filter((value, index, self) => self.indexOf(value) === index)
+
+    const existingChat = chatKeys.map((key) => global.db.data?.chats?.[key]).find((value) => value)
+    if (existingChat && global.db.data?.chats && !global.db.data.chats[chatId]) {
+      global.db.data.chats[chatId] = existingChat
+    }
+
     if (normalizedChatId && normalizedChatId !== chatId) {
       if (global.db.data?.chats?.[chatId] && !global.db.data?.chats?.[normalizedChatId]) {
         global.db.data.chats[normalizedChatId] = global.db.data.chats[chatId]
@@ -299,6 +314,13 @@ export async function handler(chatUpdate) {
     } catch {}
 
     const chat = global.db.data.chats[chatId]
+    if (chat && Array.isArray(chatKeys)) {
+      for (const key of chatKeys) {
+        if (key && !global.db.data.chats[key]) {
+          global.db.data.chats[key] = chat
+        }
+      }
+    }
     const settings = global.db.data.settings[this.user.jid]
 
     const isROwner = [...global.owner.map((n) => n)]
