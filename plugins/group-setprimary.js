@@ -65,6 +65,5 @@ const handler = async (m, { conn }) => {
 handler.help = ["setprimary"]
 handler.tags = ["grupo"]
 handler.command = ["setprimary"]
-handler.group = true
 
 export default handler
