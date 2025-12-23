@@ -4,7 +4,7 @@ import axios from "axios"
 import fetch from "node-fetch"
 
 const handler = async (m, { conn, command, usedPrefix, text, args }) => {
-const botname = conn.botname || global.botname
+const botname = conn.botname || conn.botName
 try {
 const q = m.quoted ? m.quoted : m
 const mime = (q.msg || q).mimetype || ''
