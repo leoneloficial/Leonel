@@ -314,9 +314,18 @@ export async function handler(chatUpdate) {
 
     const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(m.sender)
 
+    const allowedWhenBanned = new Set([
+      "bot",
+      "banchat",
+      "banearbot",
+      "unbanchat",
+      "desbanearbot",
+      "setprimary",
+      "delprimary",
+    ])
+
     if (isGroupChat && chat?.isBanned && !isROwner) {
       const cmdQuick = getCommandQuick(this, m.text)
-      const allowedWhenBanned = new Set(["bot", "banchat", "banearbot", "unbanchat", "desbanearbot", "setprimary", "delprimary"])
       if (!cmdQuick) return
       if (!allowedWhenBanned.has(cmdQuick)) return
     }
@@ -352,9 +361,27 @@ export async function handler(chatUpdate) {
 
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), "./plugins")
 
+    const isAllowedWhenBanned = (plugin) => {
+      if (!plugin?.command) return false
+      const commands = Array.isArray(plugin.command) ? plugin.command : [plugin.command]
+      return commands.some((cmd) => {
+        if (cmd instanceof RegExp) {
+          for (const allowed of allowedWhenBanned) {
+            if (cmd.test(allowed)) return true
+          }
+          return false
+        }
+        return allowedWhenBanned.has(cmd)
+      })
+    }
+
     for (const name in global.plugins) {
       const plugin = global.plugins[name]
       if (!plugin || plugin.disabled) continue
+
+      if (isGroupChat && chat?.isBanned && !isROwner && !isAllowedWhenBanned(plugin)) {
+        continue
+      }
 
       const __filename = join(___dirname, name)
 
