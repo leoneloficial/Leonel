@@ -12,8 +12,7 @@ let handler = async (m, { conn }) => {
     if (!isImageValid(media)) {
       return m.reply(`✦ El archivo enviado no es una imagen válida.`);
     }
-    conn.icono = `${link}`;
-      await conn.updateProfilePicture(conn.user.jid, media);
+    global.icono = `${link}`;
       await conn.sendFile(m.chat, media, 'icono.jpg', `❀ Icono actualizado.`, m);
   } catch (error) {
     console.error(error);
