@@ -1,27 +1,27 @@
-import fs from 'fs'
-import path from 'path'
+import fs from "fs"
+import path from "path"
 
-const handler = async (m, { conn, isAdmin, isROwner }) => {
-  const senderNumber = m.sender.replace(/[^0-9]/g, '')
-  const botPath = path.join('./Sessions/SubBot', senderNumber)
+const handler = async (m, { isAdmin, isROwner }) => {
+  const senderNumber = (m.sender || "").replace(/[^0-9]/g, "")
+  const botPath = path.join("./Sessions/SubBot", senderNumber)
+  const chatId = m.chat || m.key?.remoteJid || ""
 
   if (!(isAdmin || isROwner || fs.existsSync(botPath))) {
-    return m.reply(
-      `𖣣ֶㅤ֯⌗ No tienes permisos esto solo lo pueden usar *admins* *sockets* o el *owner.*`, 
-      m
-    )
+    return m.reply(`𖣣ֶㅤ֯⌗ No tienes permisos esto solo lo pueden usar *admins* *sockets* o el *owner.*`, m)
   }
 
-  global.db.data.chats[m.chat].isBanned = true
+  if (!chatId) return
 
-  m.reply(
-    `> ⌗ Bot baneado correctamente en este grupo.`
-  )
+  if (!global.db.data.chats[chatId]) global.db.data.chats[chatId] = {}
+  global.db.data.chats[chatId].isBanned = true
+  await global.db.write?.().catch(() => {})
+
+  m.reply(`> ⌗ Bot baneado correctamente en este grupo.`)
 }
 
-handler.help = ['banearbot']
-handler.tags = ['group']
-handler.command = ['banearbot', 'banchat']
+handler.help = ["banearbot"]
+handler.tags = ["group"]
+handler.command = ["banearbot", "banchat"]
 handler.group = true
 
 export default handler
