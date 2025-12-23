@@ -84,6 +84,32 @@ function isWsOpen(sock) {
   }
 }
 
+function getPrefixList(conn) {
+  const p = conn?.prefix || global.prefix
+  if (p instanceof RegExp) return [p]
+  if (typeof p === "string") return [p]
+  if (Array.isArray(p)) return p.filter((x) => (typeof x === "string" && x.length) || x instanceof RegExp)
+  return ["."]
+}
+
+function getCommandQuick(conn, text) {
+  if (typeof text !== "string" || !text.trim()) return ""
+  const prefixes = getPrefixList(conn)
+  for (const pref of prefixes) {
+    if (pref instanceof RegExp) {
+      const m = pref.exec(text)
+      if (m && m.index === 0) {
+        const noPrefix = text.slice(m[0].length).trim()
+        return (noPrefix.split(/\s+/)[0] || "").toLowerCase()
+      }
+    } else if (typeof pref === "string" && text.startsWith(pref)) {
+      const noPrefix = text.slice(pref.length).trim()
+      return (noPrefix.split(/\s+/)[0] || "").toLowerCase()
+    }
+  }
+  return ""
+}
+
 async function getGroupContext(conn, m, chatId, isGroupChat) {
   const senderRaw = m?.sender || getSenderJid(m) || m?.key?.participant || ""
   const sender = senderRaw
@@ -146,6 +172,7 @@ async function getGroupContext(conn, m, chatId, isGroupChat) {
 }
 
 export async function handler(chatUpdate) {
+  const opts = global.opts || {}
   this.msgqueque = this.msgqueque || []
   this.uptime = this.uptime || Date.now()
 
@@ -269,25 +296,11 @@ export async function handler(chatUpdate) {
           if (key && !global.db.data.chats[key]) global.db.data.chats[key] = chat
         }
       }
-
-      if (normalizedChatId && normalizedChatId !== chatId) {
-        if (global.db.data.chats[chatId] && !global.db.data.chats[normalizedChatId]) {
-          global.db.data.chats[normalizedChatId] = global.db.data.chats[chatId]
-        }
-      }
     } catch (e) {
       console.error(e)
     }
 
-    if (global.db.data.chats[chatId].isBanned) return;
-
     const user = global.db.data.users[m.sender]
-    try {
-      const actual = user.name || ""
-      const nuevo = m.pushName || (await this.getName(m.sender))
-      if (typeof nuevo === "string" && nuevo.trim() && nuevo !== actual) user.name = nuevo
-    } catch {}
-
     const chat = global.db.data.chats[chatId]
     const settings = global.db.data.settings[this.user.jid]
 
@@ -307,6 +320,21 @@ export async function handler(chatUpdate) {
     const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(
       m.sender
     )
+
+    const cmdQuick = getCommandQuick(this, m.text)
+    const allowedWhenBanned = new Set([
+      "bot",
+      "banchat",
+      "banearbot",
+      "unbanchat",
+      "desbanearbot",
+      "setprimary",
+      "delprimary",
+    ])
+
+    if (isGroupChat && cmdQuick && !isROwner && !allowedWhenBanned.has(cmdQuick)) {
+      if (global.db.data.chats[chatId].isBanned) return;
+    }
 
     if (opts["queque"] && m.text && !isPrems) {
       const queque = this.msgqueque
