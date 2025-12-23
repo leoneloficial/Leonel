@@ -84,25 +84,6 @@ function isWsOpen(sock) {
   }
 }
 
-function getPrefixList(conn) {
-  const p = conn?.prefix || global.prefix
-  if (typeof p === "string") return [p]
-  if (Array.isArray(p)) return p.filter((x) => typeof x === "string" && x.length)
-  return ["."]
-}
-
-function getCommandQuick(conn, text) {
-  if (typeof text !== "string" || !text.trim()) return ""
-  const prefixes = getPrefixList(conn)
-  for (const pref of prefixes) {
-    if (text.startsWith(pref)) {
-      const noPrefix = text.slice(pref.length).trim()
-      return (noPrefix.split(/\s+/)[0] || "").toLowerCase()
-    }
-  }
-  return ""
-}
-
 async function getGroupContext(conn, m, chatId, isGroupChat) {
   const senderRaw = m?.sender || getSenderJid(m) || m?.key?.participant || ""
   const sender = senderRaw
@@ -262,47 +243,43 @@ export async function handler(chatUpdate) {
 
       let chat = global.db.data.chats[chatId]
       if (typeof chat !== "object") global.db.data.chats[chatId] = {}
-      if (chat) {
-        if (!("isBanned" in chat)) chat.isBanned = false
-        if (!("isMute" in chat)) chat.isMute = false
-        if (!("welcome" in chat)) chat.welcome = false
-        if (!("sWelcome" in chat)) chat.sWelcome = ""
-        if (!("sBye" in chat)) chat.sBye = ""
-        if (!("detect" in chat)) chat.detect = true
-        if (!("primaryBot" in chat)) chat.primaryBot = null
-        if (!("modoadmin" in chat)) chat.modoadmin = false
-        if (!("antiLink" in chat)) chat.antiLink = true
-        if (!("nsfw" in chat)) chat.nsfw = false
-        if (!("economy" in chat)) chat.economy = true
-        if (!("gacha" in chat)) chat.gacha = true
-      } else {
-        global.db.data.chats[chatId] = {
-          isBanned: false,
-          isMute: false,
-          welcome: false,
-          sWelcome: "",
-          sBye: "",
-          detect: true,
-          primaryBot: null,
-          modoadmin: false,
-          antiLink: true,
-          nsfw: false,
-          economy: true,
-          gacha: true,
-        }
-      }
+      chat = global.db.data.chats[chatId]
+
+      if (!("isBanned" in chat)) chat.isBanned = false
+      if (!("isMute" in chat)) chat.isMute = false
+      if (!("welcome" in chat)) chat.welcome = false
+      if (!("sWelcome" in chat)) chat.sWelcome = ""
+      if (!("sBye" in chat)) chat.sBye = ""
+      if (!("detect" in chat)) chat.detect = true
+      if (!("primaryBot" in chat)) chat.primaryBot = null
+      if (!("modoadmin" in chat)) chat.modoadmin = false
+      if (!("antiLink" in chat)) chat.antiLink = true
+      if (!("nsfw" in chat)) chat.nsfw = false
+      if (!("economy" in chat)) chat.economy = true
+      if (!("gacha" in chat)) chat.gacha = true
 
       let settings = global.db.data.settings[this.user.jid]
       if (typeof settings !== "object") global.db.data.settings[this.user.jid] = {}
-      if (settings) {
-        if (!("self" in settings)) settings.self = false
-        if (!("jadibotmd" in settings)) settings.jadibotmd = true
-      } else {
-        global.db.data.settings[this.user.jid] = { self: false, jadibotmd: true }
+      settings = global.db.data.settings[this.user.jid]
+      if (!("self" in settings)) settings.self = false
+      if (!("jadibotmd" in settings)) settings.jadibotmd = true
+
+      if (chat && Array.isArray(chatKeys)) {
+        for (const key of chatKeys) {
+          if (key && !global.db.data.chats[key]) global.db.data.chats[key] = chat
+        }
+      }
+
+      if (normalizedChatId && normalizedChatId !== chatId) {
+        if (global.db.data.chats[chatId] && !global.db.data.chats[normalizedChatId]) {
+          global.db.data.chats[normalizedChatId] = global.db.data.chats[chatId]
+        }
       }
     } catch (e) {
       console.error(e)
     }
+
+    if (global.db.data.chats[chatId].isBanned) return;
 
     const user = global.db.data.users[m.sender]
     try {
@@ -312,12 +289,6 @@ export async function handler(chatUpdate) {
     } catch {}
 
     const chat = global.db.data.chats[chatId]
-    if (chat && Array.isArray(chatKeys)) {
-      for (const key of chatKeys) {
-        if (key && !global.db.data.chats[key]) global.db.data.chats[key] = chat
-      }
-    }
-
     const settings = global.db.data.settings[this.user.jid]
 
     const isROwner = [...global.owner.map((n) => n)]
@@ -336,22 +307,6 @@ export async function handler(chatUpdate) {
     const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(
       m.sender
     )
-
-    const allowedWhenBanned = new Set([
-      "bot",
-      "banchat",
-      "banearbot",
-      "unbanchat",
-      "desbanearbot",
-      "setprimary",
-      "delprimary",
-    ])
-
-    if (isGroupChat && global.db.data.chats[chatId].isBanned && !isROwner) {
-      const cmdQuick = getCommandQuick(this, m.text)
-      if (!cmdQuick) return
-      if (!allowedWhenBanned.has(cmdQuick)) return
-    }
 
     if (opts["queque"] && m.text && !isPrems) {
       const queque = this.msgqueque
@@ -383,23 +338,9 @@ export async function handler(chatUpdate) {
 
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), "./plugins")
 
-    const isAllowedWhenBanned = (plugin) => {
-      if (!plugin?.command) return false
-      const commands = Array.isArray(plugin.command) ? plugin.command : [plugin.command]
-      return commands.some((cmd) => {
-        if (cmd instanceof RegExp) {
-          for (const allowed of allowedWhenBanned) if (cmd.test(allowed)) return true
-          return false
-        }
-        return allowedWhenBanned.has(cmd)
-      })
-    }
-
     for (const name in global.plugins) {
       const plugin = global.plugins[name]
       if (!plugin || plugin.disabled) continue
-
-      if (isGroupChat && chat?.isBanned && !isROwner && !isAllowedWhenBanned(plugin)) continue
 
       const __filename = join(___dirname, name)
 
@@ -478,10 +419,6 @@ export async function handler(chatUpdate) {
         )
           return
 
-        if (isGroupChat && global.db.data.chats[chatId].isBanned && !isROwner) {
-          if (!allowedWhenBanned.has(command)) return
-        }
-
         const bypassPrimaryCommands = new Set([
           "delprimary",
           "setprimary",
@@ -500,9 +437,13 @@ export async function handler(chatUpdate) {
 
           const primaryInGroup = !!participants.find((p) => normalizeJid(this, p.id) === primary)
 
-          if (primary === normalizeJid(this, global.conn?.user?.jid)) throw false
+          if (primary === normalizeJid(this, global.conn?.user?.jid)) {
+            throw false
+          }
 
-          if (primaryConn && primaryInGroup) throw false
+          if (primaryConn && primaryInGroup) {
+            throw false
+          }
 
           if (primaryConn && !primaryInGroup) {
             chat.primaryBot = null
