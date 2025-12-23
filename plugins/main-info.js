@@ -8,7 +8,7 @@ const exec = promisify(cp.exec).bind(cp)
 const linkRegex = /https:\/\/chat\.whatsapp\.com\/([0-9A-Za-z]{20,24})/i
 
 const handler = async (m, { conn, text, command, usedPrefix, args }) => {
-const botname = conn.botname || global.botname
+const botname = conn.botname || conn.botName
 try {
 const nombre = m.pushName || 'Anónimo'
 const tag = '@' + m.sender.split('@')[0]
