@@ -2,7 +2,7 @@ import fetch from "node-fetch"
 import yts from "yt-search"
 import crypto from "crypto"
 import axios from "axios"
-import Jimp from "jimp"
+import * as Jimp from "jimp"
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
 
