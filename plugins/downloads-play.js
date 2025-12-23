@@ -20,76 +20,78 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     if (!result) throw "ꕥ No se encontraron resultados."
 
-    const { title, thumbnail, timestamp, views, ago, url, author, seconds } = result
+    const { title, thumbnail, url, author, seconds } = result
     if (seconds > 2700) throw "⚠ El contenido supera el límite de duración (45 minutos)."
 
-    const vistas = formatViews(views)
+    const isAudio = ["play", "yta", "ytmp3", "playaudio"].includes(command)
+    const isVideo = ["play2", "ytv", "ytmp4", "mp4"].includes(command)
+
+    let media = null
+    if (isAudio) {
+      media = await getAud(url)
+      if (!media?.url) throw "⚠ No se pudo obtener el audio."
+    } else if (isVideo) {
+      media = await getVid(url)
+      if (!media?.url) throw "⚠ No se pudo obtener el video."
+    }
+
+    const duracion = formatDuration(seconds)
+    const calidad = isVideo ? "360p" : "128kbps"
+    const tamano = media?.url ? await getRemoteSize(media.url) : "No disponible"
+
     const info =
       `「✦」Descargando *<${title}>*\n\n` +
-      `> ❑ Canal » *${author?.name || "Desconocido"}*\n` +
-      `> ♡ Vistas » *${vistas}*\n` +
-      `> ✧︎ Duración » *${timestamp || "No disponible"}*\n` +
-      `> ☁︎ Publicado » *${ago || "No disponible"}*\n` +
-      `> ➪ Link » ${url}\n` +
-      `> ✿ API » Adonix`
+      `> ✐ Canal » *${author?.name || "Desconocido"}*\n` +
+      `> ⴵ Duracion » *${duracion}*\n` +
+      `> ✰ Calidad: *${calidad}*\n` +
+      `> ❒ API » *Adonix*\n` +
+      `> 🜸 Link » ${url}`
 
     const thumb = (await conn.getFile(thumbnail)).data
     await conn.sendMessage(m.chat, { image: thumb, caption: info }, { quoted: m })
 
-    if (["play", "yta", "ytmp3", "playaudio"].includes(command)) {
-      const audio = await getAud(url)
-      if (!audio?.url) throw "⚠ No se pudo obtener el audio."
-
-     /* m.reply(`> ❀ *Audio procesado. Servidor:* \`${audio.api}\``) /*
-
+    if (isAudio) {
       if (command === "ytmp3") {
         await conn.sendMessage(
           m.chat,
-          { audio: { url: audio.url }, fileName: `${title}.mp3`, mimetype: "audio/mpeg" },
+          { audio: { url: media.url }, fileName: `${title}.mp3`, mimetype: "audio/mpeg" },
           { quoted: m }
         )
       } else {
         await conn.sendMessage(
           m.chat,
           {
-            document: { url: audio.url },
+            document: { url: media.url },
             fileName: `${title}.mp3`,
             mimetype: "audio/mpeg",
-            caption: `> ❀ ${title}`
+            caption: ``
           },
           { quoted: m }
         )
       }
-
       await m.react("✔️")
       return
     }
 
-    if (["play2", "ytv", "ytmp4", "mp4"].includes(command)) {
-      const video = await getVid(url)
-      if (!video?.url) throw "⚠ No se pudo obtener el video."
-
-     /* m.reply(`> ❀ *Vídeo procesado. Servidor:* \`${video.api}\``) /*
-
+    if (isVideo) {
       if (command === "ytmp4") {
         await conn.sendMessage(
           m.chat,
-          { video: { url: video.url }, mimetype: "video/mp4", caption: `> ❀ ${title}` },
+          { video: { url: media.url }, mimetype: "video/mp4", caption: `` },
           { quoted: m }
         )
       } else {
         await conn.sendMessage(
           m.chat,
           {
-            document: { url: video.url },
+            document: { url: media.url },
             fileName: `${title}.mp4`,
             mimetype: "video/mp4",
-            caption: `> ❀ ${title}`
+            caption: ``
           },
           { quoted: m }
         )
       }
-
       await m.react("✔️")
       return
     }
@@ -141,6 +143,42 @@ async function fetchJson(url) {
   } finally {
     clearTimeout(timeout)
   }
+}
+
+function formatDuration(totalSeconds) {
+  if (!Number.isFinite(totalSeconds)) return "No disponible"
+  const h = Math.floor(totalSeconds / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = Math.floor(totalSeconds % 60)
+
+  if (h > 0) return `${h} horas ${m} minutos ${s} segundos`
+  return `${m} minutos ${s} segundos`
+}
+
+async function getRemoteSize(fileUrl) {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+    const r = await fetch(fileUrl, { method: "HEAD", signal: controller.signal })
+    clearTimeout(timeout)
+    const len = r.headers.get("content-length")
+    if (!len) return "No disponible"
+    return formatBytes(Number(len))
+  } catch {
+    return "No disponible"
+  }
+}
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "No disponible"
+  const units = ["B", "KB", "MB", "GB"]
+  let i = 0
+  let n = bytes
+  while (n >= 1024 && i < units.length - 1) {
+    n /= 1024
+    i++
+  }
+  return `${n.toFixed(2)}${units[i]}`
 }
 
 function formatViews(views) {
