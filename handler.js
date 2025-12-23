@@ -151,6 +151,8 @@ export async function handler(chatUpdate) {
 
   loadBotConfig(this)
 
+  global.rcanal ||= {}
+
   let m = null
   let chatId = ""
   let isGroupChat = false
@@ -314,6 +316,32 @@ export async function handler(chatUpdate) {
       const __filename = join(___dirname, name)
 
       if (!opts["restrict"]) if (plugin.tags && plugin.tags.includes("admin")) continue
+
+      if (typeof plugin.all === "function") {
+        try {
+          await plugin.all.call(this, m, {
+            conn: this,
+            participants,
+            groupMetadata,
+            userGroup,
+            botGroup,
+            isROwner,
+            isOwner,
+            isRAdmin,
+            isAdmin,
+            isBotAdmin,
+            isPrems,
+            chatUpdate,
+            __dirname: ___dirname,
+            __filename,
+            user,
+            chat,
+            settings,
+          })
+        } catch (e) {
+          console.error(e)
+        }
+      }
 
       const strRegex = (str) => str.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&")
       const pluginPrefix = plugin.customPrefix || this.prefix || global.prefix
@@ -586,7 +614,8 @@ global.dfail = (type, m, conn) => {
     admin: `『✦』El comando *${global.comando || ""}* solo puede ser usado por los administradores del grupo.`,
     botAdmin: `『✦』Para ejecutar el comando *${global.comando || ""}* debo ser administrador del grupo.`,
   }[type]
-  if (msg) return conn.reply(m.chat, msg, m).then(() => m.react("✖️")).catch(() => {})
+
+  if (msg) return conn.reply(m.chat, msg, m, global.rcanal || {}).then(() => m.react("✖️")).catch(() => {})
 }
 
 let file = global.__filename(import.meta.url, true)
