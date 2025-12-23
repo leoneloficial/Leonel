@@ -1,5 +1,5 @@
 {
-"name": "Bot Leonel",
+"name": "YukiBot-MD",
 "version": "1.8.2",
 "description": "WhatsApp Bot Multi Device",
 "main": "index.js",
@@ -58,11 +58,6 @@
 },
 "optionalDependencies": {
 "moment-timezone": "^0.5.37",
-"wa-sticker-formatter": "^4.3.2"
-},
-"engines": {
-"node": ">=20.0.0"
-}}
 "wa-sticker-formatter": "^4.3.2"
 },
 "engines": {
