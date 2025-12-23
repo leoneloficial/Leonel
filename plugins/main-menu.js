@@ -1,7 +1,7 @@
 import fetch from 'node-fetch'
 
 let handler = async (m, { conn, args }) => {
-const botname = conn.botname || global.botname
+const botname = conn.botname || conn.botName
 const textbot = conn.textbot || global.textbot
 let mentionedJid = await m.mentionedJid
 let userId = mentionedJid && mentionedJid[0] ? mentionedJid[0] : m.sender
@@ -9,7 +9,7 @@ let totalreg = Object.keys(global.db.data.users).length
 let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
 
 let txt = `̮᷼ᮬ︵۪۪۪۪۪᷼⏜ᩘ۪۪۪᷼⏜  ׅ   ׄ❀ ׄ   ׅ  ⏜᷼ᩘ۪۪۪۪⏜۪۪۪۪۪᷼︵᷼ 
-> ✿ hola! ${m.pushName}, Soy ${botname},
+> ✿ hola! ${m.pushName}, Soy ${conn.botName},
  *Aquí tienes la lista de comandos.*
 
 ╭┈ ↷
@@ -463,7 +463,7 @@ body: textbot,
 mediaType: 1,
 mediaUrl: redes,
 sourceUrl: redes,
-thumbnail: await (await fetch(banner)).buffer(),
+thumbnail: await (await fetch(conn.botBanner)).buffer(),
 showAdAttribution: false,
 containsAutoReply: true,
 renderLargerThumbnail: true
