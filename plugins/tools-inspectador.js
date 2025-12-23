@@ -6,7 +6,7 @@ import { getUrlFromDirectPath } from "@whiskeysockets/baileys"
 import _ from "lodash"
 import axios from 'axios'
 let handler = async (m, { conn, command, usedPrefix, args, text, groupMetadata, isOwner, isROwner }) => {
-const botname = conn.botname || global.botname
+const botname = conn.botname || conn.botName
 const icono = conn.icono || global.icono
 const isCommand1 = /^(inspect|inspeccionar)\b$/i.test(command)
 const isCommand2 = /^(seguircanal)\b$/i.test(command)
