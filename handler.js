@@ -172,20 +172,26 @@ export async function handler(chatUpdate) {
   this.uptime = this.uptime || Date.now()
 
   if (!chatUpdate?.messages?.length) return
-  let m0 = chatUpdate.messages[chatUpdate.messages.length - 1]
-  if (!m0) return
+  const rawMsg = chatUpdate.messages[chatUpdate.messages.length - 1]
+  if (!rawMsg) return
 
   if (global.db.data == null) await global.loadDatabase()
 
   loadBotConfig(this)
 
+  let m = null
+  let chatId = ""
+  let isGroupChat = false
+
   try {
-    let m = smsg(this, m0) || m0
+    m = smsg(this, rawMsg) || rawMsg
     if (!m) return
     m.exp = 0
 
-    const chatId = m?.chat || m?.key?.remoteJid || ""
-    const isGroupChat = typeof chatId === "string" && chatId.endsWith("@g.us")
+    chatId = m?.chat || rawMsg?.key?.remoteJid || m?.key?.remoteJid || ""
+    isGroupChat = typeof chatId === "string" && chatId.endsWith("@g.us")
+
+    if (typeof m.text !== "string") m.text = ""
 
     try {
       let user = global.db.data.users[m.sender]
@@ -278,8 +284,6 @@ export async function handler(chatUpdate) {
       console.error(e)
     }
 
-    if (typeof m.text !== "string") m.text = ""
-
     const user = global.db.data.users[m.sender]
     try {
       const actual = user.name || ""
@@ -305,15 +309,7 @@ export async function handler(chatUpdate) {
 
     if (isGroupChat && chat?.isBanned && !isROwner) {
       const cmdQuick = getCommandQuick(this, m.text)
-      const allowedWhenBanned = new Set([
-        "bot",
-        "banchat",
-        "banearbot",
-        "unbanchat",
-        "desbanearbot",
-        "setprimary",
-        "delprimary",
-      ])
+      const allowedWhenBanned = new Set(["bot", "banchat", "banearbot", "unbanchat", "desbanearbot", "setprimary", "delprimary"])
       if (!cmdQuick) return
       if (!allowedWhenBanned.has(cmdQuick)) return
     }
@@ -429,15 +425,7 @@ export async function handler(chatUpdate) {
         )
           return
 
-        const bypassPrimaryCommands = new Set([
-          "delprimary",
-          "setprimary",
-          "banchat",
-          "banearbot",
-          "unbanchat",
-          "desbanearbot",
-          "bot",
-        ])
+        const bypassPrimaryCommands = new Set(["delprimary", "setprimary", "banchat", "banearbot", "unbanchat", "desbanearbot", "bot"])
 
         if (chat?.primaryBot && chat.primaryBot !== this.user.jid && !bypassPrimaryCommands.has(command)) {
           const primary = normalizeJid(this, chat.primaryBot)
@@ -561,23 +549,31 @@ export async function handler(chatUpdate) {
   } catch (err) {
     console.error(err)
   } finally {
-    if (opts["queque"] && m0?.message) {
-      const id = m0?.key?.id || m0?.id
-      const idx = this.msgqueque.indexOf(id)
+    if (opts["queque"] && m?.text) {
+      const mid = m?.id || m?.key?.id || rawMsg?.key?.id
+      const idx = this.msgqueque.indexOf(mid)
       if (idx !== -1) this.msgqueque.splice(idx, 1)
     }
 
     try {
-      let u = global.db.data.users[m0?.sender]
-      if (m0?.sender && u && isNumber(m0?.exp)) u.exp += m0.exp
+      const sender = (m?.sender || getSenderJid(rawMsg) || "").toString()
+      const u = global.db.data.users[sender]
+      if (sender && u) u.exp += m?.exp || 0
     } catch {}
 
     try {
-      if (!opts["noprint"]) await (await import("./lib/print.js")).default(m0, this)
+      if (!opts["noprint"]) {
+        const printable = {
+          ...(m || {}),
+          chat: chatId || (m?.chat || rawMsg?.key?.remoteJid || ""),
+          sender: (m?.sender || getSenderJid(rawMsg) || ""),
+        }
+        if (printable.sender && printable.chat) await (await import("./lib/print.js")).default(printable, this)
+      }
     } catch (err) {
       console.warn(err)
       try {
-        console.log(m0?.message)
+        console.log(rawMsg?.message)
       } catch {}
     }
   }
