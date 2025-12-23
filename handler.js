@@ -5,36 +5,232 @@ import path, { join } from "path"
 import fs, { unwatchFile, watchFile } from "fs"
 import chalk from "chalk"
 import fetch from "node-fetch"
-import ws from "ws"
+import WebSocket from "ws" // 🔧 FIX ws import
 
 const { proto } = (await import("@whiskeysockets/baileys")).default
+
 const isNumber = x => typeof x === "number" && !isNaN(x)
-const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function () {
-clearTimeout(this)
-resolve()
-}, ms))
+const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(resolve, ms))
 
 export async function handler(chatUpdate) {
-this.msgqueque = this.msgqueque || []
-this.uptime = this.uptime || Date.now()
-if (!chatUpdate) return
-this.pushMessage(chatUpdate.messages).catch(console.error)
-let m = chatUpdate.messages[chatUpdate.messages.length - 1]
-if (!m) return
-if (global.db.data == null) await global.loadDatabase()
-try {
-m = smsg(this, m) || m
-if (!m) return
-m.exp = 0
-try {
-let user = global.db.data.users[m.sender]
-if (typeof user !== "object") global.db.data.users[m.sender] = {}
-if (user) {
-if (!("name" in user)) user.name = m.name
-if (!("exp" in user) || !isNumber(user.exp)) user.exp = 0
-if (!("coin" in user) || !isNumber(user.coin)) user.coin = 0
-if (!("bank" in user) || !isNumber(user.bank)) user.bank = 0
-if (!("level" in user) || !isNumber(user.level)) user.level = 0
+  this.msgqueque = this.msgqueque || []
+  this.uptime = this.uptime || Date.now()
+
+  if (!chatUpdate) return
+  this.pushMessage(chatUpdate.messages).catch(console.error)
+
+  let m = chatUpdate.messages?.slice(-1)[0]
+  if (!m) return
+
+  if (global.db.data == null) await global.loadDatabase()
+
+  try {
+    m = smsg(this, m)
+    if (!m) return
+    m.exp = 0
+
+    // ───── USER DB ─────
+    let user = global.db.data.users[m.sender] ||= {
+      name: m.name,
+      exp: 0,
+      coin: 0,
+      bank: 0,
+      level: 0,
+      health: 100,
+      genre: "",
+      birth: "",
+      marry: "",
+      description: "",
+      packstickers: null,
+      premium: false,
+      premiumTime: 0,
+      banned: false,
+      bannedReason: "",
+      commands: 0,
+      afk: -1,
+      afkReason: "",
+      warn: 0
+    }
+
+    // ───── CHAT DB ─────
+    let chat = global.db.data.chats[m.chat] ||= {
+      isBanned: false,
+      isMute: false,
+      welcome: false,
+      sWelcome: "",
+      sBye: "",
+      detect: true,
+      primaryBot: null,
+      modoadmin: false,
+      antiLink: true,
+      nsfw: false,
+      economy: true,
+      gacha: true
+    }
+
+    // ───── SETTINGS ─────
+    let settings = global.db.data.settings[this.user.jid] ||= {
+      self: false,
+      jadibotmd: true
+    }
+
+    if (typeof m.text !== "string") m.text = ""
+
+    // ───── OWNERS / PREMIUM ─────
+    const isROwner = global.owner
+      .map(v => v.replace(/\D/g, "") + "@s.whatsapp.net")
+      .includes(m.sender)
+
+    const isOwner = isROwner || m.fromMe
+    const isPrems = isROwner || user.premium
+
+    // ─────────────────────────────
+    // 🔥 GROUP METADATA (FIX REAL)
+    // ─────────────────────────────
+    let groupMetadata = {}
+    let participants = []
+    let userGroup = {}
+    let botGroup = {}
+
+    if (m.isGroup) {
+      groupMetadata = await this.groupMetadata(m.chat)
+      participants = groupMetadata.participants.map(p => ({
+        jid: p.id,
+        admin: p.admin
+      }))
+
+      userGroup = participants.find(p => p.jid === m.sender) || {}
+      botGroup = participants.find(p => p.jid === this.user.jid) || {}
+    }
+
+    const isRAdmin = userGroup.admin === "superadmin"
+    const isAdmin = isRAdmin || userGroup.admin === "admin"
+    const isBotAdmin =
+      botGroup.admin === "admin" || botGroup.admin === "superadmin"
+
+    // ───── IGNORE BAILEYS ─────
+    if (m.isBaileys) return
+
+    m.exp += Math.ceil(Math.random() * 10)
+
+    const ___dirname = path.join(
+      path.dirname(fileURLToPath(import.meta.url)),
+      "./plugins"
+    )
+
+    // ─────────────────────────────
+    // PLUGINS LOOP
+    // ─────────────────────────────
+    for (const name in global.plugins) {
+      const plugin = global.plugins[name]
+      if (!plugin || plugin.disabled) continue
+
+      const __filename = join(___dirname, name)
+
+      if (typeof plugin.all === "function") {
+        try {
+          await plugin.all.call(this, m, {
+            chatUpdate,
+            __dirname: ___dirname,
+            __filename,
+            user,
+            chat,
+            settings
+          })
+        } catch (e) {
+          console.error(e)
+        }
+      }
+
+      const prefix = plugin.customPrefix || global.prefix
+      const match =
+        typeof prefix === "string"
+          ? [m.text.startsWith(prefix), prefix]
+          : [false, ""]
+
+      if (!match[0]) continue
+
+      const noPrefix = m.text.slice(prefix.length)
+      let [command, ...args] = noPrefix.trim().split(/\s+/)
+      command = command?.toLowerCase() || ""
+
+      const isAccept =
+        typeof plugin.command === "string"
+          ? plugin.command === command
+          : Array.isArray(plugin.command)
+          ? plugin.command.includes(command)
+          : plugin.command instanceof RegExp
+          ? plugin.command.test(command)
+          : false
+
+      if (!isAccept) continue
+
+      global.comando = command
+
+      // ───── PERMISSIONS ─────
+      const fail = plugin.fail || global.dfail
+
+      if (plugin.rowner && !isROwner) return fail("rowner", m, this)
+      if (plugin.owner && !isOwner) return fail("owner", m, this)
+      if (plugin.premium && !isPrems) return fail("premium", m, this)
+      if (plugin.group && !m.isGroup) return fail("group", m, this)
+      if (plugin.botAdmin && !isBotAdmin) return fail("botAdmin", m, this)
+      if (plugin.admin && !isAdmin) return fail("admin", m, this)
+
+      m.isCommand = true
+      user.commands++
+
+      try {
+        await plugin.call(this, m, {
+          args,
+          command,
+          conn: this,
+          participants,
+          groupMetadata,
+          userGroup,
+          botGroup,
+          isROwner,
+          isOwner,
+          isAdmin,
+          isBotAdmin,
+          isPrems,
+          chat,
+          user,
+          settings,
+          __dirname: ___dirname,
+          __filename
+        })
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+// ─────────────────────────────
+// FAIL HANDLER (FIX)
+// ─────────────────────────────
+global.dfail = (type, m, conn) => {
+  const msg = {
+    rowner: `✦ Solo los creadores del bot pueden usar este comando.`,
+    premium: `✦ Este comando es solo para usuarios premium.`,
+    group: `✦ Este comando solo funciona en grupos.`,
+    admin: `✦ Este comando es solo para administradores.`,
+    botAdmin: `✦ El bot necesita ser administrador.`
+  }[type]
+
+  if (msg) return conn.reply(m.chat, msg, m)
+}
+
+// ───── HOT RELOAD ─────
+let file = global.__filename(import.meta.url, true)
+watchFile(file, async () => {
+  unwatchFile(file)
+  console.log(chalk.magenta("Se actualizó handler.js"))
+  if (global.reloadHandler) console.log(await global.reloadHandler())
+})if (!("level" in user) || !isNumber(user.level)) user.level = 0
 if (!("health" in user) || !isNumber(user.health)) user.health = 100
 if (!("genre" in user)) user.genre = ""
 if (!("birth" in user)) user.birth = ""
