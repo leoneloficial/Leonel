@@ -13,7 +13,7 @@ const delay = (ms) => isNumber(ms) && new Promise((resolve) => setTimeout(resolv
 
 function loadBotConfig(conn) {
   try {
-    const botNumber = (conn.user?.jid || "").split("@")[0].replace(/\D/g, "")
+    const botNumber = (conn.user?.jid || conn.user?.id || "").split("@")[0].replace(/\D/g, "")
     const configPath = path.join("./Sessions/SubBot", botNumber, "config.json")
 
     let currentName = global.botname || global.namebot || "Bot"
@@ -23,7 +23,8 @@ function loadBotConfig(conn) {
 
     if (fs.existsSync(configPath)) {
       try {
-        const config = JSON.parse(fs.readFileSync(configPath))
+        const raw = fs.readFileSync(configPath, "utf-8")
+        const config = JSON.parse(raw)
         if (config?.name) currentName = config.name
         if (config?.banner) currentBanner = config.banner
       } catch (err) {
@@ -146,6 +147,7 @@ async function getGroupContext(conn, m, chatId, isGroupChat) {
 }
 
 export async function handler(chatUpdate) {
+  const opts = global?.opts || {}
   this.msgqueque = this.msgqueque || []
   this.uptime = this.uptime || Date.now()
 
@@ -258,9 +260,10 @@ export async function handler(chatUpdate) {
       if (!("economy" in chat)) chat.economy = true
       if (!("gacha" in chat)) chat.gacha = true
 
-      let settings = global.db.data.settings[this.user.jid]
-      if (typeof settings !== "object") global.db.data.settings[this.user.jid] = {}
-      settings = global.db.data.settings[this.user.jid]
+      const botJidKey = normalizeJid(this, getBotJidRaw(this))
+      let settings = global.db.data.settings[botJidKey]
+      if (typeof settings !== "object") global.db.data.settings[botJidKey] = {}
+      settings = global.db.data.settings[botJidKey]
       if (!("self" in settings)) settings.self = false
       if (!("jadibotmd" in settings)) settings.jadibotmd = true
 
@@ -279,8 +282,6 @@ export async function handler(chatUpdate) {
       console.error(e)
     }
 
-    if (global.db.data.chats[chatId].isBanned) return;
-
     const user = global.db.data.users[m.sender]
     try {
       const actual = user.name || ""
@@ -289,7 +290,8 @@ export async function handler(chatUpdate) {
     } catch {}
 
     const chat = global.db.data.chats[chatId]
-    const settings = global.db.data.settings[this.user.jid]
+    const botJidKey = normalizeJid(this, getBotJidRaw(this))
+    const settings = global.db.data.settings[botJidKey] || {}
 
     const isROwner = [...global.owner.map((n) => n)]
       .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
@@ -299,13 +301,13 @@ export async function handler(chatUpdate) {
 
     const isPrems =
       isROwner ||
-      global.prems
+      (global.prems || [])
         .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
         .includes(m.sender) ||
       user.premium === true
 
-    const isOwners = [this.user.jid, ...global.owner.map((n) => n + "@s.whatsapp.net")].includes(
-      m.sender
+    const isOwners = [botJidKey, ...(global.owner || []).map((n) => normalizeJid(this, n + "@s.whatsapp.net"))].includes(
+      normalizeJid(this, m.sender)
     )
 
     if (opts["queque"] && m.text && !isPrems) {
@@ -429,7 +431,19 @@ export async function handler(chatUpdate) {
           "bot",
         ])
 
-        if (chat?.primaryBot && chat.primaryBot !== this.user.jid && !bypassPrimaryCommands.has(command)) {
+        const bypassBannedCommands = new Set([
+          "unbanchat",
+          "desbanearbot",
+          "banchat",
+          "banearbot",
+          "bot",
+          "setprimary",
+          "delprimary",
+        ])
+
+        if (chat?.isBanned && !bypassBannedCommands.has(command)) return
+
+        if (chat?.primaryBot && chat.primaryBot !== botJidKey && !bypassPrimaryCommands.has(command)) {
           const primary = normalizeJid(this, chat.primaryBot)
           const primaryConn = (global.conns || []).find(
             (c) => c?.user?.jid && normalizeJid(this, c.user.jid) === primary && c?.ws?.socket && isWsOpen(c.ws.socket)
