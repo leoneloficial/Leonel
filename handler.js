@@ -245,7 +245,7 @@ export async function handler(chatUpdate) {
 
     const isRAdmin = userGroup?.admin === "superadmin" || false
     const isAdmin = isRAdmin || userGroup?.admin === "admin" || false
-    const isBotAdmin = !!botGroup?.admin
+    const isBotAdmin = botGroup?.admin === "superadmin" || botGroup?.admin === "admin" || false
 
     const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), "./plugins")
 
