@@ -30,7 +30,7 @@ global.textbot = "sմოí, mᥲძᥱ ᥕі𝗍һ ᑲᥡ 𓆩‌۫᷼ ִֶָღ
 global.dev = "© ⍴᥆ᥕᥱrᥱძ ᑲᥡ 𓆩‌۫᷼ ִֶָღ݉͢ᥣᥱ᥆ᥒᥱᥣ.𓆪‌‹࣭݊𓂃ⷪ ִֶָ ᷫ‹ ⷭ.࣭𓆩‌۫᷼Ⴕ۫͜𓆪‌"
 global.author = "© mᥲძᥱ ᥕі𝗍һ ᑲᥡ 𓆩‌۫᷼ ִֶָღ݉͢ᥣᥱ᥆ᥒᥱᥣ.𓆪‌‹࣭݊𓂃ⷪ ִֶָ ᷫ‹ ⷭ.࣭𓆩‌۫᷼Ⴕ۫͜𓆪‌"
 global.etiqueta = "𓆩‌۫᷼ ִֶָღ݉͢ᥣᥱ᥆ᥒᥱᥣ.𓆪‌‹࣭݊𓂃ⷪ ִֶָ ᷫ‹ ⷭ.࣭𓆩‌۫᷼Ⴕ۫͜𓆪‌"
-global.currency = "¥enes"
+global.currency = "$𝗗𝗼𝗹𝗮𝗿𝗲𝘀"
 global.banner = "https://raw.githubusercontent.com/edar123/im/main/media/leo.jpg"
 global.icono = "https://raw.githubusercontent.com/edar123/im/main/media/leo2.jpg"
 global.catalogo = fs.readFileSync('./lib/catalogo.jpg')
@@ -55,7 +55,7 @@ vreden: { url: "https://api.vreden.web.id", key: null },
 delirius: { url: "https://api.delirius.store", key: null },
 zenzxz: { url: "https://api.zenzxz.my.id", key: null },
 siputzx: { url: "https://api.siputzx.my.id", key: null },
-adonix: { url: "https://api-adonix.ultraplus.click", key: 'Yuki-WaBot' }
+adonix: { url: "https://api-adonix.ultraplus.click", key: 'Leonel' }
 }
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
