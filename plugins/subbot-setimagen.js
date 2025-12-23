@@ -5,7 +5,7 @@ import { fileTypeFromBuffer } from "file-type";
 
 let handler = async (m, { conn }) => {
   if (!global.conns.includes(conn)) return m.reply('Este comando es solo para sub-bots.')
-  if (!m.quoted || !/image/.test(m.quoted.mimetype)) return m.reply(`❀ Por favor, responde a una imagen con el comando *seticono* para actualizar la foto del catalogo.`);
+  if (!m.quoted || !/image/.test(m.quoted.mimetype)) return m.reply(`❀ Por favor, responde a una imagen con el comando *setimagen* para actualizar la imagen del menú.`);
   try {
     const media = await m.quoted.download();
     let link = await catbox(media);
@@ -13,10 +13,10 @@ let handler = async (m, { conn }) => {
       return m.reply(`✦ El archivo enviado no es una imagen válida.`);
     }
     global.icono = `${link}`;
-      await conn.sendFile(m.chat, media, 'icono.jpg', `❀ Icono actualizado.`, m);
+      await conn.sendFile(m.chat, media, 'icono.jpg', `❀ Imagen del menú actualizada.`, m);
   } catch (error) {
     console.error(error);
-    m.reply(`⚠︎ Hubo un error al intentar cambiar el icono.`);
+    m.reply(`⚠︎ Hubo un error al intentar cambiar la imagen.`);
   }
 };
 
@@ -34,9 +34,9 @@ const isImageValid = (buffer) => {
   return false;
 };
 
-handler.help = ['seticono'];
+handler.help = ['setimagen'];
 handler.tags = ['subbot'];
-handler.command = ['seticono'];
+handler.command = ['setimagen'];
 
 export default handler;
 
