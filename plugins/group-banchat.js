@@ -1,4 +1,3 @@
-
 let handler = async (m, { conn, usedPrefix, command, args }) => {
   const botname = conn.botname || conn.botName || global.botname || global.namebot || "Bot"
   const chat = global.db.data.chats[m.chat] || (global.db.data.chats[m.chat] = {})
