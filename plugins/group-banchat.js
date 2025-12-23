@@ -1,5 +1,5 @@
 let handler = async (m, { conn, usedPrefix, command, args }) => {
-const botname = conn.botname || global.botname
+const botname = conn.botname || conn.botName
 let chat = global.db.data.chats[m.chat]
 if (command === 'bot') {
 if (args.length === 0) {
