@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs'
 
 const handler = async (m, {conn, participants, groupMetadata}) => {
-const botname = conn.botname || global.botname
+const botname = conn.botName || conn.botName
 const chat = global.db.data.chats[m.chat]
 const pp = await conn.profilePictureUrl(m.chat, 'image').catch(() => 'https://qu.ax/MAuSS.jpg')
 const { antiLink, detect, welcome, sWelcome, sBye, modoadmin, nsfw, isBanned, economy, gacha, primaryBot } = global.db.data.chats[m.chat]
