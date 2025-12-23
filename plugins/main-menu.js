@@ -2,6 +2,7 @@ import fetch from 'node-fetch'
 
 let handler = async (m, { conn, args }) => {
 const botname = conn.botname || global.botname
+const textbot = conn.textbot || global.textbot
 let mentionedJid = await m.mentionedJid
 let userId = mentionedJid && mentionedJid[0] ? mentionedJid[0] : m.sender
 let totalreg = Object.keys(global.db.data.users).length

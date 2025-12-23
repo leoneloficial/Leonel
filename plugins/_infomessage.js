@@ -9,6 +9,7 @@ const lidCache = new Map()
 const handler = m => m
 handler.before = async function (m, { conn, participants, groupMetadata }) {
 const icono = conn.icono || global.icono
+const textbot = conn.textbot || global.textbot
 if (!m.messageStubType || !m.isGroup) return
 const primaryBot = global.db.data.chats[m.chat].primaryBot
 if (primaryBot && conn.user.jid !== primaryBot) throw !1
