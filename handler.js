@@ -189,6 +189,13 @@ export async function handler(chatUpdate) {
     m.exp = 0
 
     chatId = m?.chat || rawMsg?.key?.remoteJid || m?.key?.remoteJid || ""
+    const normalizedChatId = normalizeJid(this, chatId)
+    if (normalizedChatId && normalizedChatId !== chatId) {
+      if (global.db.data?.chats?.[chatId] && !global.db.data?.chats?.[normalizedChatId]) {
+        global.db.data.chats[normalizedChatId] = global.db.data.chats[chatId]
+      }
+      chatId = normalizedChatId
+    }
     isGroupChat = typeof chatId === "string" && chatId.endsWith("@g.us")
 
     if (typeof m.text !== "string") m.text = ""
