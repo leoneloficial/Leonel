@@ -1,5 +1,6 @@
 let buatall = 1
 let handler = async (m, { conn, args, usedPrefix, command }) => {
+const botname = conn.botname || global.botname
 if (!db.data.chats[m.chat].economy && m.isGroup) {
 return m.reply(`《✦》Los comandos de *Economía* están desactivados en este grupo.\n\nUn *administrador* puede activarlos con el comando:\n» *${usedPrefix}economy on*`)
 }
