@@ -20,6 +20,13 @@ let txt = `̮᷼ᮬ︵۪۪۪۪۪᷼⏜ᩘ۪۪۪᷼⏜  ׅ   ׄ❀ ׄ   ׅ  ⏜�
 │🜸 *Librería »* ${libreria}*
 ╰ׅ┈ࠢ͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜╴ ⋱࣭ ᩴ  ⋮֔   ᩴ ⋰╶͜─ׄ͜─ׄ֟፝͜─ׄ͜─ׄ͜┈ࠢ͜╯ׅ
 
+»  ⊹˚୨ •(=^●ω●^=)• *SUBBOT EDIT*✿
+> ✿ Editar la imagen del menu.
+✿ *#setbanner*
+> ⸙ imagen del menu.
+✿ *# setname* *el nombre que quieras*
+> ⸙ Cambiar el nombre de tu bot.
+
 »  ⊹˚୨ •(=^●ω●^=)• *ECONOMY*
 > ✿ Comandos de *Economía* para ganar dinero.
 ✿ *#w • #work • #trabajar*
@@ -81,7 +88,9 @@ let txt = `̮᷼ᮬ︵۪۪۪۪۪᷼⏜ᩘ۪۪۪᷼⏜  ׅ   ׄ❀ ׄ   ׅ  ⏜�
 ✿ *#mega • #mg* + [Link]
 > ⸙ Descargar un archivo de MEGA.
 ✿ *#play • #play2 • #ytmp3 • #ytmp4* + [Cancion] / [Link]
-> ⸙ Descargar una cancion o vídeo de YouTube.
+> ⸙ Descargar una cancion o vídeo en documento.
+✿ *#playaudio • #playvideo • #ytmp3 • #ytmp4* + [Cancion] / [Link]
+> ⸙ Descargar una cancion o vídeo en audio 
 ✿ *#facebook • #fb* + [Link]
 > ⸙ Descargar un video de Facebook.
 ✿ *#twitter • #x* + [Link]
